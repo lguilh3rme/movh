@@ -43,6 +43,8 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--tx);font-size:14
 .pd{font-size:13px;color:var(--t2);max-width:560px;line-height:1.5}
 .pdiv{font-size:11px;color:var(--t3);margin-top:5px}
 .toprow{position:fixed;top:14px;right:14px;z-index:10;display:flex;gap:8px;align-items:center}
+.relogio-top{font-size:11px;font-weight:700;color:var(--P);font-variant-numeric:tabular-nums;min-width:52px;text-align:right;letter-spacing:.02em}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 .dm{width:34px;height:34px;border-radius:50%;background:var(--card);border:1px solid var(--bd);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.1);transition:transform .15s}
 .dm:hover{transform:scale(1.06)}
 .sairbtn{font-size:10px;padding:4px 10px;border-radius:6px;border:1px solid var(--bd);background:var(--card);color:var(--t2);cursor:pointer}
@@ -209,6 +211,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--tx);font-size:14
 
 <div id="treinoScreen" style="display:none">
   <div class="toprow">
+    <span id="tRelogioTop" class="relogio-top"></span>
     <button class="sairbtn" id="tSairBtn" onclick="aLogout()">Sair</button>
     <button class="dm" id="themeBtn" onclick="aToggleTheme()" title="Alternar tema">🌙</button>
   </div>
@@ -218,14 +221,13 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--tx);font-size:14
         <span class="badge" id="tBadgeNome">💪 Treino</span>
         <span class="badge b2" id="tBadgeDias" style="display:none"></span>
       </div>
-      <div class="pt" id="tProtoNome">Treino</div>
+      <div id="tProtoNome" style="display:none"></div>
+      <div class="pt" id="tSaudacaoTitulo">Bom treino! 👊</div>
       <div class="pd" id="tProtoDesc"></div>
       <div class="pdiv" id="tProtoDiv" style="display:none"></div>
       <div class="alunolbl"><span id="tLogadoComo">Logado como</span> <span id="tAlunoNome">—</span></div>
-      <div class="saudacao-row">
-        <span id="tSaudacao" class="saudacao-txt">Bom treino! 👊</span>
-        <span id="tRelogio" class="relogio-txt"></span>
-      </div>
+      <div id="tRelogio" style="display:none"></div>
+      <div class="saudacao-row" style="display:none"></div>
     </div>
 
     <div id="tDashboard" style="display:none">
@@ -427,19 +429,41 @@ function aToggleTheme(){
   aApplyTheme(saved);
 })();
 
+// ── Hidratação ──
+let _movhHidraTimer = null;
+let _movhHidraSnooze = false;
+const HIDRA_INTERVALO = 20 * 60 * 1000; // 20 min
+
+function aIniciarHidratacao(){
+  if (_movhHidraTimer) return;
+  _movhHidraTimer = setInterval(aMostrarHidra, HIDRA_INTERVALO);
+}
+
+function aMostrarHidra(){
+  if (_movhHidraSnooze) { _movhHidraSnooze = false; return; }
+  const el = document.getElementById('hidra-toast');
+  if (el) el.remove();
+  const div = document.createElement('div');
+  div.id = 'hidra-toast';
+  div.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--P);color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:999;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:slideUp .3s ease';
+  div.innerHTML = '<span>💧 Hora de beber água!</span><button onclick="this.parentElement.remove();_movhHidraSnooze=true" style="background:rgba(255,255,255,.25);border:none;border-radius:6px;padding:3px 8px;color:#fff;font-size:11px;cursor:pointer">+5 min</button><button onclick="this.parentElement.remove()" style="background:rgba(255,255,255,.15);border:none;border-radius:6px;padding:3px 8px;color:#fff;font-size:11px;cursor:pointer">✓ Bebi</button>';
+  document.body.appendChild(div);
+  setTimeout(() => { if (div.parentElement) div.remove(); }, 15000);
+}
+
 // ── Saudação e relógio ──
 function aAtualizarRelogio(){
-  const el = document.getElementById('tRelogio');
-  if (!el) return;
   const now = new Date();
   const h = String(now.getHours()).padStart(2,'0');
   const m = String(now.getMinutes()).padStart(2,'0');
   const s = String(now.getSeconds()).padStart(2,'0');
-  el.textContent = h + ':' + m + ':' + s;
+  const txt = h + ':' + m + ':' + s;
+  const el = document.getElementById('tRelogio');
+  if (el) el.textContent = txt;
+  const elTop = document.getElementById('tRelogioTop');
+  if (elTop) elTop.textContent = txt;
 }
 function aAtualizarSaudacao(){
-  const el = document.getElementById('tSaudacao');
-  if (!el) return;
   const h = new Date().getHours();
   let msg;
   if (aLang === 'en') {
@@ -447,12 +471,14 @@ function aAtualizarSaudacao(){
   } else {
     msg = h < 12 ? 'Bom dia! 👊' : h < 18 ? 'Boa tarde! 👊' : 'Boa noite! 👊';
   }
-  el.textContent = msg;
+  const el = document.getElementById('tSaudacaoTitulo');
+  if (el) el.textContent = msg;
 }
 function aIniciarRelogio(){
   aAtualizarRelogio();
   aAtualizarSaudacao();
   setInterval(aAtualizarRelogio, 1000);
+  aIniciarHidratacao();
 }
 
 
