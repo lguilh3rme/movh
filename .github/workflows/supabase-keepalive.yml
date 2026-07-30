@@ -1,0 +1,29 @@
+name: Supabase Keep-Alive
+ 
+# Faz uma requisição pro Supabase a cada 3 dias, pra evitar que o projeto
+# pause por inatividade no plano free (Supabase pausa depois de ~7 dias
+# sem nenhuma chamada de API). Roda de graça no GitHub Actions, sem
+# depender de site externo (UptimeRobot, cron-job.org etc.).
+ 
+on:
+  schedule:
+    - cron: '0 9 */3 * *'   # a cada 3 dias, 09:00 UTC (~06:00 horário de Brasília)
+  workflow_dispatch: {}      # permite clicar em "Run workflow" e testar na hora
+ 
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://cfanjhuzrcgxrbfmhahi.supabase.co/rest/v1/" \
+            -H "apikey: sb_publishable_UBIH2PU-7fkrH2gs40HW2w_Maj9dl2W")
+          echo "Resposta do Supabase: HTTP $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 500 ]; then
+            echo "✅ Supabase respondeu — projeto ativo."
+          else
+            echo "⚠️ Resposta inesperada — vale checar o painel do Supabase."
+            exit 1
+          fi
+ 
