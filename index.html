@@ -272,6 +272,16 @@ body.preview-mode #tSairBtn,body.preview-mode #tBtnProgresso,body.preview-mode #
 .preview-aviso{margin:4px 0;padding:5px 9px;font-size:10.5px}
 .dash-badges-row{margin-bottom:.5rem}
 .cargabox input{width:2.6ch;min-width:26px}
+.bloco .bh{background-image:linear-gradient(to right,color-mix(in srgb,var(--G) 18%,transparent) var(--bp,0%),transparent var(--bp,0%))}
+.bp{font-size:10px;font-weight:800;color:var(--t2);background:var(--bg);padding:1px 7px;border-radius:99px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bloco-concluido .bp{background:var(--Gl);color:var(--Gd)}
+.dica-series{display:flex;align-items:center;gap:8px;margin-top:6px;padding:6px 8px 6px 10px;border-radius:9px;background:var(--Pl);color:var(--Pd);font-size:11px;line-height:1.35}
+.dica-series span{flex:1}
+.dica-series button{border:none;background:var(--P);color:#fff;border-radius:7px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer}
+.ec-dica-pulse{animation:ecDica 1.6s ease-in-out infinite}
+@keyframes ecDica{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--P) 55%,transparent)}50%{box-shadow:0 0 0 5px transparent}}
+.ec-just-done{animation:ecJust .6s ease}
+@keyframes ecJust{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--G) 60%,transparent)}100%{box-shadow:0 0 0 12px transparent}}
 .footer{margin-top:1rem}
 #tDashConteudo .pt{font-size:16px!important;margin-bottom:6px!important}
 .loadingbox{display:flex;align-items:center;justify-content:center;padding:3rem;font-size:13px;color:var(--t2)}
@@ -477,7 +487,14 @@ function aAtualizarProgressoSessao(){
   const total = cards.length;
   if(!total){ wrap.style.display='none'; return; }
   const feitos = cards.filter(c=>c.classList.contains('done')).length;
-  const pct = Math.round((feitos/total)*100);
+  let somaFr = 0;
+  cards.forEach(function(c){
+    if (c.classList.contains('done')) { somaFr += 1; return; }
+    const bd = document.getElementById(c.id + '-series-badge');
+    const tt = bd ? (parseInt(bd.dataset.total, 10) || 0) : 0;
+    if (tt) somaFr += Math.min(1, (aSeriesFeitas[c.id] || 0) / tt);
+  });
+  const pct = feitos >= total ? 100 : Math.min(99, Math.round((somaFr/total)*100));
   const fill = document.getElementById('tSpFill');
   const texto = document.getElementById('tSpTexto');
   if(fill) fill.style.width = pct+'%';
@@ -488,6 +505,8 @@ function aAtualizarProgressoSessao(){
   if(texto) texto.textContent = msg;
   wrap.classList.toggle('sp-completo', pct>=100);
   wrap.style.display = 'block';
+  aAtualizarTodosBlocos();
+  aDicaSeriesMontar();
 }
 
 // ── Persistência de sessão de treino ──
@@ -533,6 +552,7 @@ function aSessaoRestaurar(){
           card.classList.add('done');
           const btn = document.getElementById(eid+'-done');
           if (btn) btn.checked = true;
+          aSeriesSync(eid, true);
         }
       }
     });
@@ -1431,6 +1451,26 @@ function aSeriesAtualizarUI(eid){
   if (contTxt) contTxt.textContent = (total && feitas >= total ? '✓ ' : '') + feitas + '/' + total;
   badge.style.setProperty('--fill', (total ? Math.min(100, (feitas/total)*100) : 0) + '%');
   badge.classList.toggle('ec-chip-completo', !!total && feitas >= total);
+  const card = document.getElementById(eid);
+  if (card) aAtualizarBlocoProgresso(card.closest('.bloco'));
+}
+// Série <-> exercício feito: completar N/N marca o exercício como feito; voltar
+// o contador (ou desmarcar o check) desfaz. Marcar o check manualmente completa
+// as séries. O bloco acompanha pelo estado dos exercícios.
+function aSeriesSync(eid, done){
+  const badge = document.getElementById(eid + '-series-badge');
+  if (!badge) return;
+  const total = parseInt(badge.dataset.total, 10) || 0;
+  if (!total) return;
+  aSeriesFeitas[eid] = done ? total : 0;
+  aSeriesSalvar();
+  aSeriesAtualizarUI(eid);
+}
+function aMarcarFeito(eid, done){
+  const btn = document.getElementById(eid + '-done');
+  if (!btn || btn.checked === done) return;
+  btn.checked = done;
+  aToggleDone(eid, true);
 }
 function aContarSerieConcluida(eid){
   if (!eid) return;
@@ -1440,10 +1480,55 @@ function aContarSerieConcluida(eid){
   aSeriesFeitas[eid] = (total && atual >= total) ? 0 : atual + 1;
   aSeriesSalvar();
   aSeriesAtualizarUI(eid);
+  if (total) {
+    if (aSeriesFeitas[eid] >= total) aMarcarFeito(eid, true);
+    else if (atual >= total) aMarcarFeito(eid, false);
+  }
+  if (aDicaSeriesAtiva()) aDicaSeriesFechar();
   if (!badge) return;
   if (navigator.vibrate) { try { navigator.vibrate(aSeriesFeitas[eid] ? 15 : [10,40,10]); } catch(e){} }
   badge.classList.remove('ec-series-pulse'); void badge.offsetWidth; badge.classList.add('ec-series-pulse');
   setTimeout(function(){ badge.classList.remove('ec-series-pulse'); }, 500);
+}
+// progresso do bloco: exercícios feitos contam 1, os em andamento contam a fração de séries
+function aAtualizarBlocoProgresso(bloco){
+  if (!bloco) return;
+  const cards = [...bloco.querySelectorAll('.ec')];
+  if (!cards.length) return;
+  let soma = 0, feitos = 0;
+  cards.forEach(function(c){
+    if (c.classList.contains('done')) { soma += 1; feitos += 1; return; }
+    const b = document.getElementById(c.id + '-series-badge');
+    const t = b ? (parseInt(b.dataset.total, 10) || 0) : 0;
+    if (t) soma += Math.min(1, (aSeriesFeitas[c.id] || 0) / t);
+  });
+  const bh = bloco.querySelector('.bh');
+  if (bh) bh.style.setProperty('--bp', Math.round(soma / cards.length * 100) + '%');
+  const bid = bloco.id.replace('bloco-', '');
+  const pill = document.getElementById('bp-' + bid);
+  if (pill) pill.textContent = feitos + '/' + cards.length;
+}
+function aAtualizarTodosBlocos(){ document.querySelectorAll('.bloco').forEach(aAtualizarBlocoProgresso); }
+// dica de uso (some no primeiro toque ou no OK)
+function aDicaSeriesAtiva(){ if (window._aDicaFechada) return false; try { return !localStorage.getItem('movh-dica-series'); } catch(e){ return true; } }
+function aDicaSeriesMontar(){
+  const wrap = document.getElementById('tSessaoProgresso');
+  if (!wrap) return;
+  const primeiro = document.querySelector('#tDashConteudo .ec-chip-progresso');
+  let d = document.getElementById('aDicaSeries');
+  if (!primeiro || !aDicaSeriesAtiva()) {
+    if (d) d.remove();
+    document.querySelectorAll('.ec-dica-pulse').forEach(function(x){ x.classList.remove('ec-dica-pulse'); });
+    return;
+  }
+  if (!d) { d = document.createElement('div'); d.id = 'aDicaSeries'; d.className = 'dica-series'; wrap.appendChild(d); }
+  d.innerHTML = '<span>👆 ' + (aLang==='en' ? 'Tap the <b>sets badge</b> (e.g. 4×8) after each set — it counts and fills up. At the last set the exercise is marked done.' : 'Toque no <b>badge de séries</b> (ex: 4×8) a cada série feita — ele conta e vai enchendo. Na última, o exercício é marcado como feito.') + '</span><button type="button" onclick="aDicaSeriesFechar()">OK</button>';
+  primeiro.classList.add('ec-dica-pulse');
+}
+function aDicaSeriesFechar(){
+  window._aDicaFechada = true;
+  if (!window._movhPreview) { try { localStorage.setItem('movh-dica-series', '1'); } catch(e){} }
+  aDicaSeriesMontar();
 }
 function aTocarBeepDescanso(){
   try {
@@ -1639,12 +1724,14 @@ function aConfirmarSolicitarAvaliacao(){
   const ov = document.getElementById('movh-avaliacao-overlay');
   if (ov) ov.remove();
 }
-function aToggleDone(eid){
+function aToggleDone(eid, auto){
   const card = document.getElementById(eid);
   const btn = document.getElementById(eid+'-done');
   if(!card || !btn) return;
   const done = btn.checked;
   card.classList.toggle('done', done);
+  if(done){ card.classList.remove('ec-just-done'); void card.offsetWidth; card.classList.add('ec-just-done'); } else card.classList.remove('ec-just-done');
+  if(auto !== true) aSeriesSync(eid, done);
   const bloco = card.closest('.bloco');
   if(bloco){
     const exCards = [...bloco.querySelectorAll('.ec')];
@@ -1653,16 +1740,17 @@ function aToggleDone(eid){
     const bid = bloco.id.replace('bloco-','');
     const bbtn = document.getElementById('bdone-'+bid);
     if(bbtn) bbtn.textContent = all ? '↩' : '✓';
-    // recolhe bloco automaticamente quando todos feitos; reabre ao desmarcar
+    // recolhe o bloco quando todos feitos (só no check manual, pra dar tempo de registrar a carga); reabre ao desmarcar
     const body = document.getElementById(bid);
     const arr = bloco.querySelector('.bh .bt-arr');
-    if(all && body){
+    if(all && body && auto !== true){
       body.style.display = 'none';
       if(arr) arr.style.transform = 'rotate(-90deg)';
     } else if(!done && body){
       body.style.display = 'block';
       if(arr) arr.style.transform = 'rotate(0deg)';
     }
+    aAtualizarBlocoProgresso(bloco);
   }
   aSessaoSalvar();
   aVerificarTreinoConcluido();
@@ -1678,8 +1766,10 @@ function aBlocoToggleDone(bid){
   bloco.querySelectorAll('.ec').forEach(card => {
     card.classList.toggle('done', done);
     const eb = document.getElementById(card.id+'-done');
-    if(eb) eb.textContent = done ? (aLang==='en'?'↩ Undo':'↩ Desfazer') : (aLang==='en'?'✓ Done':'✓ Feito');
+    if(eb) eb.checked = done;
+    aSeriesSync(card.id, done);
   });
+  aAtualizarBlocoProgresso(bloco);
   // recolhe bloco ao concluir; reabre ao desfazer
   const body = document.getElementById(bid);
   const arr = bloco.querySelector('.bh .bt-arr');
@@ -2266,7 +2356,7 @@ function aBlocoOut(b, faseAtual, ctxPrefix, bIdx, semanaDentroFase, duracaoSeman
   }
   const exs = aRenderExercicios(b, faseAtual, bid, semanaDentroFase, duracaoSemanas);
   const obsBloco = b.obs ? '<div class="b-obs">💡 '+aEsc(b.obs)+'</div>' : '';
-  return '<div class="bloco" id="bloco-'+bid+'"><div class="bh" data-bid="'+bid+'" onclick="aToggleBloco(this.dataset.bid,this)"><div class="dot" style="border-left-color:'+(b.cor||'#999')+'"></div><span class="bt">'+aEsc(b.nome)+'</span>'+(b.meta?'<span class="bm">'+aEsc(b.meta)+'</span>':'')+'<span class="bt-arr">▾</span><button class="bloco-done-btn" id="bdone-'+bid+'" data-bid="'+bid+'" onclick="event.stopPropagation();aBlocoToggleDone(this.dataset.bid)" title="Concluir bloco">✓</button></div>'+obsBloco+'<div class="exl" id="'+bid+'">'+exs+'</div></div>';
+  return '<div class="bloco" id="bloco-'+bid+'"><div class="bh" data-bid="'+bid+'" onclick="aToggleBloco(this.dataset.bid,this)"><div class="dot" style="border-left-color:'+(b.cor||'#999')+'"></div><span class="bt">'+aEsc(b.nome)+'</span>'+(b.meta?'<span class="bm">'+aEsc(b.meta)+'</span>':'')+'<span class="bp" id="bp-'+bid+'"></span><span class="bt-arr">▾</span><button class="bloco-done-btn" id="bdone-'+bid+'" data-bid="'+bid+'" onclick="event.stopPropagation();aBlocoToggleDone(this.dataset.bid)" title="Concluir bloco">✓</button></div>'+obsBloco+'<div class="exl" id="'+bid+'">'+exs+'</div></div>';
 }
 
 // Monta a lista de exercícios de um bloco, agrupando os que estão marcados
