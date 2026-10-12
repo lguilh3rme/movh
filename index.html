@@ -283,6 +283,12 @@ body.preview-mode #tSairBtn,body.preview-mode #tBtnProgresso,body.preview-mode #
 .dica-series span{flex:1}
 .dica-series button{border:none;background:var(--P);color:#fff;border-radius:7px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer}
 .ec-dica-pulse{animation:ecDica 1.6s ease-in-out infinite}
+/* ── balão de observação (v94) ── */
+.ec-o{display:inline-block!important;position:relative;margin:0 0 8px 2px!important;padding:4px 10px!important;background:color-mix(in srgb,var(--P) 13%,var(--card))!important;border:1px solid color-mix(in srgb,var(--P) 26%,transparent);border-radius:12px 12px 12px 3px!important;font-size:11px!important;line-height:1.35;color:var(--tx)!important;max-width:calc(100% - 70px)}
+.ec-o::before{content:none!important}
+.ec-o::after{content:"";position:absolute;left:11px;bottom:-5px;width:8px;height:8px;background:color-mix(in srgb,var(--P) 13%,var(--card));border-right:1px solid color-mix(in srgb,var(--P) 26%,transparent);border-bottom:1px solid color-mix(in srgb,var(--P) 26%,transparent);transform:rotate(45deg);border-radius:0 0 2px 0}
+.ec-hd .vbtn{top:0}
+.ec-hd:has(.ec-o) .vbtn{top:32px}
 /* ── cores (v93): marfim no claro, vidro no escuro ── */
 :root:not([data-theme=dark]){--bg:#F3EFE6;--card:#FBF8F1;--cl:#F1EDE3;--bd:#E2DCCD}
 [data-theme=dark]{--card:rgba(255,255,255,.055);--cl:rgba(255,255,255,.04);--bd:rgba(255,255,255,.09)}
@@ -1745,7 +1751,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
     const repsM = serieCurtoM[2].trim().match(/^([\d\-–\/]+)\s*(.*)$/);
     const lblS = aLang==='en' ? 'sets' : 'séries';
     seriesBadgeHTML = '<span class="sx-c"><i>' + lblS + '</i><b>' + aEsc(serieCurtoM[1]) + '</b></span><span class="sx-x">×</span>' +
-      (repsM ? '<span class="sx-c"><i>reps</i><b>' + aEsc(repsM[1]) + '</b></span>' + (repsM[2] ? '<span class="sx-ex">' + aEsc(repsM[2]) + '</span>' : '') : '<span class="sx-c"><i>reps</i><b>' + aEsc(serieCurtoM[2].trim()) + '</b></span>');
+      (repsM ? (function(){ const sfx = repsM[2].trim(); const tk = sfx.split(' ')[0].toLowerCase(); const ehT = ['s','seg','min','m',"'",'"'].indexOf(tk) >= 0; const resto = ehT ? sfx.slice(tk.length).trim() : sfx; return '<span class="sx-c"><i>' + (ehT ? (aLang==='en'?'time':'tempo') : 'reps') + '</i><b>' + aEsc(repsM[1]) + (ehT ? aEsc(tk) : '') + '</b></span>' + (resto ? '<span class="sx-ex">' + aEsc(resto) + '</span>' : ''); })() : '<span class="sx-c"><i>reps</i><b>' + aEsc(serieCurtoM[2].trim()) + '</b></span>');
   }
   const seriesFeitasHoje = Math.min(aSeriesFeitas[eid] || 0, seriesTotal || 0);
   const seriesFillPct = seriesTotal ? Math.min(100, (seriesFeitasHoje/seriesTotal)*100) : 0;
@@ -1774,6 +1780,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
   return '<div class="ec" id="'+eid+'">' +
     '<div class="ec-hd">' +
       '<div class="ec-info">' +
+        (ex.obs ? '<span class="ec-o">'+aEsc(ex.obs)+'</span>' : '') +
         '<div class="ec-name-row">' +
           '<span class="ec-done-wrap">' +
             '<input type="checkbox" class="ec-done-cb" id="'+eid+'-done" data-eid="'+eid+'" onchange="aToggleDone(this.dataset.eid)" title="'+aEsc(aT('marcar_feito'))+'">' +
@@ -1782,7 +1789,6 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
           '<span class="ec-n">'+aEsc(ex.nome)+'</span>' +
         '</div>' +
         (chips ? '<div class="ec-chips">'+chips+'</div>' : '') +
-        (ex.obs ? '<span class="ec-o">'+aEsc(ex.obs)+'</span>' : '') +
         baseRefHTML +
       '</div>' +
       (emb ? '<button class="vbtn" data-emb="'+aEsc(emb)+'" data-vs="'+eid+'-vs" onclick="aToggleVideo(this,this.dataset.vs,this.dataset.emb)"><span>'+(aLang==='en'?'Video':'Vídeo')+'</span></button>' : '') +
