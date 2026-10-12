@@ -1668,7 +1668,6 @@ function aDicaSeriesMontar(){
   if (!d) { d = document.createElement('div'); d.id = 'aDicaSeries'; d.className = 'dica-series'; wrap.appendChild(d); }
   d.innerHTML = '<span>👆 ' + (aLang==='en' ? 'Tap the <b>sets badge</b> (e.g. 4×8) after each set — it counts and fills up. At the last set the exercise is marked done.' : 'Toque no badge <b>séries × reps</b> a cada série feita: ele conta e enche. Na última, o exercício conclui.') + '</span><button type="button" onclick="aDicaSeriesFechar()">OK</button>';
 }
-function aToggleObs(el){ el.classList.toggle('ec-o-aberto'); }
 function aDicaSeriesFechar(){
   window._aDicaFechada = true;
   if (!window._movhPreview) { try { localStorage.setItem('movh-dica-series', '1'); } catch(e){} }
