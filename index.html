@@ -469,6 +469,15 @@ button:active,.ec-chip[role=button]:active,.vbtn:active{transform:scale(.96)}
 .meso-datas{font-size:11px;color:var(--t3);margin-bottom:8px;font-weight:600}
 .dbt-data{font-size:9px;opacity:.7;display:block;font-weight:400;margin-top:1px}
 @media(max-width:480px){.wrap{padding:3rem .75rem 2.5rem}.pt{font-size:19px}}
+/* ── v97: métodos, recorde, confete ── */
+.a-cj-dica{font-size:10px;color:var(--t3);padding:0 12px 4px;margin-top:-2px}
+.a-cj-head .a-cj-label{flex:1}
+.carga-pr .cargabox-ic,.carga-pr{box-shadow:0 0 0 1.5px #E3A82B inset}
+.ec-pr{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;color:#8a5a00;background:#FFE29A;border-radius:99px;padding:2px 8px;margin-left:6px;animation:ecPop .5s ease}
+@keyframes ecPop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.cf-p{position:fixed;top:-12px;width:8px;height:12px;z-index:10001;pointer-events:none;opacity:.95;animation:cfFall linear forwards}
+@keyframes cfFall{to{transform:translateY(105vh) rotate(720deg);opacity:.9}}
+.sc-streak{display:inline-block;font-size:12px;font-weight:700;background:color-mix(in srgb,var(--P) 16%,transparent);color:var(--tx);border-radius:99px;padding:4px 12px;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -1630,6 +1639,79 @@ function aContarSerieConcluida(eid){
   if (navigator.vibrate) { try { navigator.vibrate(aSeriesFeitas[eid] ? 15 : [10,40,10]); } catch(e){} }
   badge.classList.remove('ec-series-pulse'); void badge.offsetWidth; badge.classList.add('ec-series-pulse');
   setTimeout(function(){ badge.classList.remove('ec-series-pulse'); }, 500);
+  if (aSeriesFeitas[eid] > atual) {
+    const fim = total && aSeriesFeitas[eid] >= total;
+    if (fim) aScrollProximo(eid);
+    if (!(fim && !aProximoPendente(eid))) aAutoDescanso(eid);
+  }
+}
+function aProximoPendente(eid){
+  const todos = [].slice.call(document.querySelectorAll('.ec'));
+  const i = todos.findIndex(function(x){ return x.id === eid; });
+  for (let k = i + 1; k < todos.length; k++) { if (!todos[k].classList.contains('done')) return todos[k]; }
+  return null;
+}
+// ao tocar numa série, já inicia o cronômetro de descanso do exercício
+// (desligável: localStorage movh-autotimer = 0). Fora do modo prévia.
+function aAutoDescanso(eid){
+  if (window._movhPreview) return;
+  try { if (localStorage.getItem('movh-autotimer') === '0') return; } catch(e){}
+  const chip = document.querySelector('.ec-chip-clicavel[data-eid="' + eid + '"]');
+  if (chip) aIniciarDescanso(chip.dataset.tempo, chip.dataset.nome, eid);
+}
+// exercício concluído: abre o bloco do próximo pendente e rola até ele
+function aScrollProximo(eid){
+  const nx = aProximoPendente(eid);
+  if (!nx) return;
+  const bl = nx.closest('.bloco');
+  if (bl) { const body = document.getElementById(bl.id.replace('bloco-','')); if (body && body.style.display === 'none') { body.style.display = 'block'; const ar = bl.querySelector('.bh .bt-arr'); if (ar) ar.style.transform = 'rotate(0deg)'; } }
+  setTimeout(function(){ try { nx.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){} }, 650);
+}
+// por padrão só o primeiro bloco fica aberto (o treino cabe na tela)
+(function aBlocosColapsoPadrao(){
+  function aplicar(root){
+    const pais = new Set();
+    root.querySelectorAll ? root.querySelectorAll('.bloco').forEach(function(b){ pais.add(b.parentNode); }) : null;
+    if (root.classList && root.classList.contains('bloco')) pais.add(root.parentNode);
+    pais.forEach(function(p){
+      const bl = [].slice.call(p.children).filter(function(c){ return c.classList && c.classList.contains('bloco'); });
+      if (bl.length < 2) return;
+      bl.forEach(function(b, i){
+        if (b.dataset.autoc) return; b.dataset.autoc = '1';
+        if (i === 0) return;
+        const body = document.getElementById(b.id.replace('bloco-',''));
+        if (body && !b.classList.contains('bloco-concluido')) { body.style.display = 'none'; const ar = b.querySelector('.bh .bt-arr'); if (ar) ar.style.transform = 'rotate(-90deg)'; }
+      });
+    });
+  }
+  new MutationObserver(function(ms){ ms.forEach(function(m){ m.addedNodes.forEach(function(n){ if (n.nodeType === 1 && (n.matches('.bloco') || n.querySelector('.bloco'))) aplicar(n); }); }); }).observe(document.documentElement, { childList: true, subtree: true });
+})();
+function aConfete(){
+  const cores = ['#7C6FE0','#E3A82B','#1A9E72','#D45828','#3580D8','#E0457B'];
+  for (let i = 0; i < 46; i++) {
+    const p = document.createElement('i'); p.className = 'cf-p';
+    p.style.left = (Math.random() * 100) + 'vw';
+    p.style.background = cores[i % cores.length];
+    p.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    p.style.animationDelay = (Math.random() * 0.4) + 's';
+    p.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+    document.body.appendChild(p);
+    setTimeout(function(el){ el.remove(); }, 3800, p);
+  }
+}
+async function aStreakSemana(){
+  if (window._movhPreview || !aAlunoRow) return;
+  try {
+    const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    await new Promise(function(r){ setTimeout(r, 1800); });
+    const res = await aClient.from('rpe_sessoes').select('criado_em').eq('aluno_id', aAlunoRow.id).gte('criado_em', d.toISOString());
+    const dias = new Set((res.data || []).map(function(x){ return String(x.criado_em).slice(0,10); }));
+    const n = dias.size; if (!n) return;
+    const t = document.querySelector('#movh-sessao-overlay .sc-titulo'); if (!t || document.getElementById('sc-streak')) return;
+    const el = document.createElement('div'); el.id = 'sc-streak'; el.className = 'sc-streak';
+    el.textContent = aLang === 'en' ? ('🔥 ' + n + ' workout' + (n > 1 ? 's' : '') + ' this week') : ('🔥 ' + n + (n > 1 ? ' treinos' : ' treino') + ' nesta semana');
+    t.insertAdjacentElement('afterend', el);
+  } catch(e){}
 }
 // progresso do bloco: exercícios feitos contam 1, os em andamento contam a fração de séries
 function aAtualizarBlocoProgresso(bloco){
@@ -1901,7 +1983,9 @@ function aToggleDone(eid, auto){
       if(arr) arr.style.transform = 'rotate(0deg)';
     }
     aAtualizarBlocoProgresso(bloco);
+    if(all && done){ const nb = bloco.nextElementSibling; if(nb && nb.classList.contains('bloco')){ const nbody = document.getElementById(nb.id.replace('bloco-','')); if(nbody){ nbody.style.display='block'; const nar = nb.querySelector('.bh .bt-arr'); if(nar) nar.style.transform='rotate(0deg)'; } } }
   }
+  if(done && auto !== true) aScrollProximo(eid);
   aSessaoSalvar();
   aVerificarTreinoConcluido();
 }
@@ -1978,6 +2062,7 @@ function aVerificarTreinoConcluido(forcar){
   </div>`;
   document.body.appendChild(overlay);
   aDorExerciciosSelecionados = [];
+  aConfete(); aStreakSemana();
   aChecarSolicitacaoMudanca(overlay);
   // registra a sessão como concluída pro professor (badge "x/y sessões no
   // mês" no painel) mesmo que o aluno feche a tela sem enviar o RPE —
@@ -2198,6 +2283,9 @@ async function aSalvarCarga(eid, exercicioNome){
   const carga = document.getElementById(eid+'-carga').value;
   const reps = document.getElementById(eid+'-reps').value;
   if (!carga && !reps) return;
+  const cargaNum = carga ? parseFloat(carga) : null;
+  let maxAnt = 0;
+  (aTodosRegistros || []).forEach(function(r){ if (r.exercicio_nome === exercicioNome && r.carga != null && r.carga > maxAnt) maxAnt = r.carga; });
   const { error } = await aClient.from('registros_sessao').insert({
     aluno_id: aAlunoRow.id,
     protocolo_id: aProtocolo.id,
@@ -2212,6 +2300,15 @@ async function aSalvarCarga(eid, exercicioNome){
   // destaca a badge de carga (fica verde) pra indicar que já tem registro
   const cargabox = okEl ? okEl.closest('.cargabox') : null;
   if(cargabox) cargabox.classList.add('carga-registrada');
+  if (cargaNum != null) {
+    (aTodosRegistros = aTodosRegistros || []).push({ exercicio_nome: exercicioNome, carga: cargaNum, reps: reps ? parseInt(reps) : null });
+    if (maxAnt > 0 && cargaNum > maxAnt) {
+      if (cargabox) cargabox.classList.add('carga-pr');
+      const hd = document.getElementById(eid) ? document.getElementById(eid).querySelector('.ec-n') : null;
+      if (hd && !hd.querySelector('.ec-pr')) { const s = document.createElement('span'); s.className = 'ec-pr'; s.textContent = '🏆 PR +' + (Math.round((cargaNum - maxAnt) * 10) / 10) + 'kg'; hd.appendChild(s); }
+      if (navigator.vibrate) { try { navigator.vibrate([20,40,20,40,60]); } catch(e){} }
+    }
+  }
 }
 
 async function aSalvarTempo(eid, exercicioNome){
@@ -2513,6 +2610,12 @@ function aBlocoOut(b, faseAtual, ctxPrefix, bIdx, semanaDentroFase, duracaoSeman
 // como "conjugado" (cj) no mesmo card visual — espelha o agrupamento que já
 // existe no editor do Gerador (cj-group), pra o aluno ver claramente quais
 // exercícios são feitos em sequência, sem descanso entre eles.
+const A_METODOS = {
+  conjugado: { e:'🔗', pt:'Faça em sequência, descansando só ao fim do grupo.', en:'Do them back to back, rest only after the group.' },
+  progressivo: { e:'📈', pt:'Aumente a carga a cada série, mantendo a execução.', en:'Increase the load every set, keeping form.' },
+  piramide: { e:'🔺', pt:'A carga sobe e as repetições descem a cada série.', en:'Load goes up and reps go down every set.' },
+  dropset: { e:'⬇️', pt:'Ao chegar perto da falha, reduza a carga e continue.', en:'Near failure, drop the load and keep going.' }
+};
 function aRenderExercicios(b, faseAtual, ctxPrefix, semanaDentroFase, duracaoSemanas){
   const cgs = b.conjGroups || {};
   const exercicios = b.exercicios || [];
@@ -2525,11 +2628,13 @@ function aRenderExercicios(b, faseAtual, ctxPrefix, semanaDentroFase, duracaoSem
       if (renderedGroups.has(gk)) return; // já renderizou esse grupo inteiro
       renderedGroups.add(gk);
       const g = cgs[gk] || { label: aT('conjugado'), rest: '', restAfter: '' };
+      const mt = A_METODOS[g.metodo] || A_METODOS.conjugado;
       const gExsIdx = [];
       exercicios.forEach((e,i) => { if (String(e.cj) === gk) gExsIdx.push(i); });
       const itensHTML = gExsIdx.map(i => aExCard(exercicios[i], faseAtual, ctxPrefix + '-e' + i, b.progressaoAuto, semanaDentroFase, duracaoSemanas)).join('');
       h += '<div class="a-cj-group">' +
-        '<div class="a-cj-head"><span class="a-cj-ic">🔗</span><span class="a-cj-label">' + aEsc(g.label || aT('conjugado')) + '</span></div>' +
+        '<div class="a-cj-head"><span class="a-cj-ic">' + mt.e + '</span><span class="a-cj-label">' + aEsc(g.label || aT('conjugado')) + '</span></div>' +
+        '<div class="a-cj-dica">' + aEsc(aLang === 'en' ? mt.en : mt.pt) + '</div>' +
         '<div class="a-cj-items">' + itensHTML + '</div>' +
         (g.restAfter ? '<div class="a-cj-foot">⏱ ' + aEsc(aT('descanso_apos_grupo')) + ': ' + aEsc(g.restAfter) + '</div>' : '') +
       '</div>';
