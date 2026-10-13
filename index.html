@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<link rel="preconnect" href="https://www.youtube-nocookie.com"><link rel="preconnect" href="https://i.ytimg.com"><link rel="dns-prefetch" href="https://www.google.com">
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>MOVH — Meu Treino</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1358,7 +1359,7 @@ async function aBoot(sessionParam){
 
 function aEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function aAttr(s){ return aEsc(s); }
-function aEmbedUrl(url){ if(!url) return ''; const m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&?\/]+)/); return m ? 'https://www.youtube.com/embed/'+m[1] : ''; }
+function aEmbedUrl(url){ if(!url) return ''; const m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&?\/]+)/); return m ? 'https://www.youtube-nocookie.com/embed/'+m[1] : ''; }
 
 // Converte formatos compactos de série/reps (ex: "3x12", "4×[6-10→10-12→4-6]")
 // num texto mais didático pro aluno (ex: "3 séries — 12 repetições"), no
@@ -2282,7 +2283,8 @@ async function aSolicitarMudancaTreino(){
 function aToggleVideo(btn, slotId, src){ aAbrirVideoModal(src); }
 function aAbrirVideoModal(src){
   const m=document.getElementById('a-video-modal');
-  document.getElementById('a-video-iframe').src=src+'?autoplay=1&rel=0&mute=1';
+  const ld=document.getElementById('a-video-load'); if(ld) ld.style.display='flex';
+  document.getElementById('a-video-iframe').src=src+'?autoplay=1&rel=0&mute=1&playsinline=1&modestbranding=1';
   m.style.display='flex';
   document.body.style.overflow='hidden';
 }
@@ -3942,7 +3944,8 @@ aBoot();
 <div id="a-video-modal" onclick="aFecharVideoModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:16px">
   <div onclick="event.stopPropagation()" style="width:min(92vw,840px);position:relative">
     <button onclick="aFecharVideoModal()" style="position:absolute;top:-36px;right:0;background:none;border:none;color:#fff;font-size:28px;line-height:1;cursor:pointer">&#x2715;</button>
-    <iframe id="a-video-iframe" src="" style="width:100%;aspect-ratio:16/9;border:0;border-radius:10px;display:block" allow="autoplay;encrypted-media" allowfullscreen></iframe>
+    <div id="a-video-load" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;pointer-events:none">⏳ Carregando vídeo…</div>
+    <iframe id="a-video-iframe" src="" onload="var l=document.getElementById('a-video-load');if(l&&this.getAttribute('src'))l.style.display='none'" style="position:relative;width:100%;aspect-ratio:16/9;border:0;border-radius:10px;display:block;background:#000" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>
   </div>
 </div>
 <div id="a-teste-modal" onclick="aFecharTesteModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:16px">
