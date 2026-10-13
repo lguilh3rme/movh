@@ -501,6 +501,17 @@ body.preview-mode .toprow{position:sticky!important;top:0;z-index:40;background:
   .cargabox{transform-origin:right center}
   .bloco{margin-bottom:8px!important}
 }
+/* ── v99: conjugado compacto, descanso único no cabeçalho do grupo ── */
+.a-cj-group{border-radius:10px!important}
+.a-cj-head{padding:3px 8px!important;gap:6px!important;min-height:0!important;align-items:center!important}
+.a-cj-head .a-cj-label{font-size:10px!important;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.a-cj-head .a-cj-rest{flex:0 0 auto;padding:1px 8px!important;font-size:10.5px!important;white-space:nowrap}
+.a-cj-dica{padding:0 10px 3px!important;margin-top:0!important;font-size:9.5px!important;line-height:1.25}
+.a-cj-items{padding:2px!important;gap:2px!important}
+.a-cj-items .ec{padding:5px 8px!important;border-radius:8px!important}
+.a-cj-items .ec-chips{margin-top:3px!important;gap:4px!important}
+.a-cj-items .ec-hd{gap:6px!important}
+.a-cj-foot{display:none!important}
 </style>
 </head>
 <body>
@@ -1866,7 +1877,7 @@ function aFecharWidgetDescanso(){
   if (w) w.style.display = 'none';
   aDescansoTimer = null;
 }
-function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSemanas){
+function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSemanas, emConj){
   const emb = aEmbedUrl(ex.url || (ex.nome && aExVideoMap[ex.nome]) || '');
   const isTempo = ex.reg === 'tempo';
   const ultimo = aUltimaCargaPorExercicio[ex.nome];
@@ -1903,7 +1914,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
   const seriesFeitasHoje = Math.min(aSeriesFeitas[eid] || 0, seriesTotal || 0);
   const seriesFillPct = seriesTotal ? Math.min(100, (seriesFeitasHoje/seriesTotal)*100) : 0;
   const baseRefHTML = sugVolume
-    ? '<div class="ec-base-ref">' + aT('base_professor') + ': ' + aEsc(aFormatarSeries(ex.series)) + (ex.rest ? ' · ' + aEsc(ex.rest) : '') + '</div>'
+    ? '<div class="ec-base-ref">' + aT('base_professor') + ': ' + aEsc(aFormatarSeries(ex.series)) + (ex.rest && !emConj ? ' · ' + aEsc(ex.rest) : '') + '</div>'
     : '';
   const cargaBadge = isTempo
     ? '<span class="ec-chip cargabox tempobox'+((ultimo&&ultimo.reps!=null)?' carga-registrada':'')+'">'+aEsc(aT('tempo'))+' ⏱️' +
@@ -1920,7 +1931,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
       '</span>';
   const chips = [
     ex.series ? '<span class="ec-chip'+(sugVolume?' ec-chip-fase':' ec-chip-s')+(seriesTotal?' ec-chip-progresso'+(seriesFeitasHoje>=seriesTotal?' ec-chip-completo':''):'')+'" id="'+eid+'-series-badge" data-total="'+seriesTotal+'" title="'+aEsc(seriesExibir)+(seriesTotal?(aLang==='en'?' — tap to count a set':' — toque para contar uma série'):'')+'"'+(seriesTotal?' role="button" data-eid="'+eid+'" onclick="aContarSerieConcluida(this.dataset.eid)" style="--fill:'+seriesFillPct+'%"':'')+'>'+(sugVolume?'🧭 ':'')+seriesBadgeHTML+(seriesTotal?' <span id="'+eid+'-series-count" style="opacity:.8;font-variant-numeric:tabular-nums">'+(seriesFeitasHoje>=seriesTotal?'✓ ':'')+seriesFeitasHoje+'/'+seriesTotal+'</span>':'')+'</span>' : '',
-    '<span class="ec-chip'+(sugVolume?' ec-chip-fase':' ec-chip-r')+(restExibir?'':' ec-chip-rlivre')+' ec-chip-clicavel" data-tempo="'+aEsc(restExibir||'60s')+'" data-nome="'+aEsc(ex.nome||'')+'" data-eid="'+eid+'" onclick="aIniciarDescanso(this.dataset.tempo,this.dataset.nome,this.dataset.eid)" title="'+(aLang==='en'?'Tap to start a rest timer':'Toque pra iniciar o cronômetro de descanso')+'">⏱ '+aEsc(restExibir||'60s')+'</span>',
+    emConj ? '' : '<span class="ec-chip'+(sugVolume?' ec-chip-fase':' ec-chip-r')+(restExibir?'':' ec-chip-rlivre')+' ec-chip-clicavel" data-tempo="'+aEsc(restExibir||'60s')+'" data-nome="'+aEsc(ex.nome||'')+'" data-eid="'+eid+'" onclick="aIniciarDescanso(this.dataset.tempo,this.dataset.nome,this.dataset.eid)" title="'+(aLang==='en'?'Tap to start a rest timer':'Toque pra iniciar o cronômetro de descanso')+'">⏱ '+aEsc(restExibir||'60s')+'</span>',
     mostrarSugestao ? '<span class="ec-chip ec-chip-sug" title="'+aEsc(sugestaoTitle)+'">'+(sugestao.origem==='padrao_movimento'?'🎯 ':'💡 ')+aEsc(sugestao.valor)+'kg</span>' : '',
     cargaBadge
   ].filter(Boolean).join('');
@@ -2670,12 +2681,20 @@ function aRenderExercicios(b, faseAtual, ctxPrefix, semanaDentroFase, duracaoSem
       const mt = A_METODOS[g.metodo] || A_METODOS.conjugado;
       const gExsIdx = [];
       exercicios.forEach((e,i) => { if (String(e.cj) === gk) gExsIdx.push(i); });
-      const itensHTML = gExsIdx.map(i => aExCard(exercicios[i], faseAtual, ctxPrefix + '-e' + i, b.progressaoAuto, semanaDentroFase, duracaoSemanas)).join('');
+      const itensHTML = gExsIdx.map(i => aExCard(exercicios[i], faseAtual, ctxPrefix + '-e' + i, b.progressaoAuto, semanaDentroFase, duracaoSemanas, true)).join('');
+      // Descanso do GRUPO (um só): "após o grupo" se o professor definiu; senão o
+      // descanso do 1º exercício que tiver; senão 60s. O chip fica no cabeçalho e
+      // o cronômetro automático dispara ao concluir a série do ÚLTIMO exercício.
+      let gRest = g.restAfter || '';
+      if (!gRest) { gExsIdx.forEach(function(i){ if (!gRest && exercicios[i].rest) gRest = exercicios[i].rest; }); }
+      const gLabel = g.label || aT('conjugado');
+      const gDica = aLang === 'en' ? mt.en : mt.pt;
+      const gLastEid = ctxPrefix + '-e' + gExsIdx[gExsIdx.length - 1];
+      const gChip = '<span class="ec-chip ec-chip-r ec-chip-clicavel a-cj-rest' + (gRest ? '' : ' ec-chip-rlivre') + '" data-tempo="' + aEsc(gRest || '60s') + '" data-nome="' + aEsc(gLabel) + '" data-eid="' + gLastEid + '" onclick="aIniciarDescanso(this.dataset.tempo,this.dataset.nome,this.dataset.eid)" title="' + aEsc(aT('descanso_apos_grupo')) + '">⏱ ' + aEsc(gRest || '60s') + '</span>';
       h += '<div class="a-cj-group">' +
-        '<div class="a-cj-head"><span class="a-cj-ic">' + mt.e + '</span><span class="a-cj-label">' + aEsc(g.label || aT('conjugado')) + '</span></div>' +
-        '<div class="a-cj-dica">' + aEsc(aLang === 'en' ? mt.en : mt.pt) + '</div>' +
+        '<div class="a-cj-head" title="' + aEsc(gDica) + '"><span class="a-cj-ic">' + mt.e + '</span><span class="a-cj-label">' + aEsc(gLabel) + '</span>' + gChip + '</div>' +
+        (g.metodo && g.metodo !== 'conjugado' ? '<div class="a-cj-dica">' + aEsc(gDica) + '</div>' : '') +
         '<div class="a-cj-items">' + itensHTML + '</div>' +
-        (g.restAfter ? '<div class="a-cj-foot">⏱ ' + aEsc(aT('descanso_apos_grupo')) + ': ' + aEsc(g.restAfter) + '</div>' : '') +
       '</div>';
     } else {
       h += aExCard(ex, faseAtual, eid, b.progressaoAuto, semanaDentroFase, duracaoSemanas);
