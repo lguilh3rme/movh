@@ -512,6 +512,34 @@ body.preview-mode .toprow{position:sticky!important;top:0;z-index:40;background:
 .a-cj-items .ec-chips{margin-top:3px!important;gap:4px!important}
 .a-cj-items .ec-hd{gap:6px!important}
 .a-cj-foot{display:none!important}
+/* ── v48 · opção A: séries×reps vermelho MOVH, verde único, carga com rótulo, avelã / preto azulado ── */
+:root{--mv:#b10000;--mvl:#FBE9E7}
+:root:not([data-theme=dark]){--bg:#EEE4D3!important;--card:#F8F2E7!important;--cl:#E9DECB!important;--bd:#DACCB5!important}
+[data-theme=dark]{--bg:#0B101A!important;--card:rgba(150,175,255,.06)!important;--cl:rgba(150,175,255,.045)!important;--bd:rgba(150,175,255,.12)!important}
+:root:not([data-theme=dark]) .sessao-concluida-card,:root:not([data-theme=dark]) .authcard,:root:not([data-theme=dark]) .dm{background-color:#F8F2E7!important}
+[data-theme=dark] .authcard,[data-theme=dark] .dm,[data-theme=dark] .tela-renovar,[data-theme=dark] .sessao-concluida-card{background-color:#121a2a!important}
+.ec-name-row{gap:7px!important}
+.ec-name-row .ec-chip{flex:0 0 auto;margin:0!important}
+.ec-chip.ec-chip-s,.ec-chip.ec-chip-progresso{background-color:var(--mvl)!important;color:var(--mv)!important;border:1px solid color-mix(in srgb,var(--mv) 45%,transparent)!important;--fillc:var(--mv)}
+.ec-chip.ec-chip-progresso.ec-chip-completo{background-color:var(--Gl)!important;color:var(--Gd)!important;border-color:color-mix(in srgb,var(--G) 55%,transparent)!important;--fillc:var(--G)}
+[data-theme=dark] .ec-chip.ec-chip-s,[data-theme=dark] .ec-chip.ec-chip-progresso{background-color:rgba(255,90,90,.12)!important;color:#FF9A9A!important;border-color:rgba(255,120,120,.4)!important;--fillc:#FF6B6B}
+[data-theme=dark] .ec-chip.ec-chip-progresso.ec-chip-completo{background-color:rgba(26,158,114,.16)!important;color:#8EE3BF!important;border-color:rgba(26,158,114,.5)!important;--fillc:var(--G)}
+.ec-chips{gap:5px!important;margin-top:5px!important;align-items:center!important}
+.cargabox{display:inline-flex!important;flex-direction:column!important;align-items:flex-start!important;gap:1px!important;padding:2px 8px 3px!important}
+.cargabox .cb-l{font-size:8px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;opacity:.65;line-height:1.1;white-space:nowrap}
+.cargabox .cb-r{display:inline-flex;align-items:center;gap:0}
+.cargabox .cb-r input{min-width:0!important;padding:0!important;text-align:right!important}
+.cargabox .cb-r input[id$="-carga"]{width:4ch!important}
+.cargabox .cb-r input[id$="-reps"]{width:2.6ch!important}
+.cargabox .cb-r .u{margin:0 3px 0 1px!important;font-size:10px}
+.cargabox .cb-r .sep{margin:0 3px}
+.cargabox.carga-registrada{background:var(--Gl)!important;color:var(--Gd)!important;border:1px solid color-mix(in srgb,var(--G) 55%,transparent)!important}
+[data-theme=dark] .cargabox.carga-registrada{background:rgba(26,158,114,.16)!important;color:#8EE3BF!important}
+.semana-strip-dia.hoje{border-color:var(--G)!important;color:var(--Gd)!important;background:var(--Gl)!important;box-shadow:0 0 0 2px var(--Gl)!important}
+.semana-strip-dia.hoje.sel{background:var(--G)!important;color:#fff!important;border-color:var(--G)!important}
+[data-theme=dark] .semana-strip-dia.hoje:not(.sel){color:#8EE3BF!important;background:rgba(26,158,114,.14)!important}
+.cargabox .salvar-mini{background:var(--G)!important;color:#fff!important}
+[data-theme=dark] .hoje-banner{color:#8EE3BF!important;background:rgba(26,158,114,.14)!important}
 </style>
 </head>
 <body>
@@ -1202,6 +1230,17 @@ function aRegistrarAcesso(){
     if (Date.now() - ult < 20 * 60000) return;
     localStorage.setItem(k, String(Date.now()));
     aClient.from('alunos').update({ ultimo_acesso: new Date().toISOString() }).eq('id', aAlunoRow.id).then(function(){}, function(){});
+  } catch(e){}
+}
+function aRegistrarVisto(){
+  try {
+    if (window._movhPreview || !aAlunoRow || !aAlunoRow.id) return;
+    if (!window._movhVistoHook) { window._movhVistoHook = true; document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') aRegistrarVisto(); }); }
+    const k = 'movh-ult-visto';
+    const ult = parseInt(localStorage.getItem(k) || '0', 10);
+    if (Date.now() - ult < 20 * 60000) return;
+    localStorage.setItem(k, String(Date.now()));
+    aClient.from('alunos').update({ treino_visto_em: new Date().toISOString() }).eq('id', aAlunoRow.id).then(function(){}, function(){});
   } catch(e){}
 }
 async function aBoot(sessionParam){
@@ -1920,15 +1959,15 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
         '<button class="salvar-mini" data-eid="'+eid+'" data-nome="'+aEsc(ex.nome||'')+'" onclick="aSalvarTempo(this.dataset.eid,this.dataset.nome)" title="'+aEsc(aT('salvar'))+'">✓</button>' +
         '<span class="cargasalvo" id="'+eid+'-ok">✓</span>' +
       '</span>'
-    : '<span class="ec-chip cargabox'+((ultimo&&ultimo.carga!=null)?' carga-registrada':'')+'" title="'+aEsc(aT('carga'))+'"><span class="ic">🏋️</span>' +
+    : '<span class="ec-chip cargabox'+((ultimo&&ultimo.carga!=null)?' carga-registrada':'')+'" title="'+aEsc(aT('carga'))+'"><span class="cb-l">'+(aLang==='en'?'load used · reps':'carga usada · reps')+'</span><span class="cb-r"><span class="ic">🏋️</span>' +
         '<input type="number" inputmode="decimal" step="0.5" placeholder="0" aria-label="kg" id="'+eid+'-carga" value="'+(ultimo&&ultimo.carga!=null?aEsc(ultimo.carga):'')+'"><span class="u">kg</span>' +
         '<span class="sep">×</span>' +
         '<input type="number" inputmode="numeric" placeholder="0" aria-label="reps" id="'+eid+'-reps" value="'+(ultimo&&ultimo.reps!=null?aEsc(ultimo.reps):'')+'"><span class="u">reps</span>' +
         '<button class="salvar-mini" data-eid="'+eid+'" data-nome="'+aEsc(ex.nome||'')+'" onclick="aSalvarCarga(this.dataset.eid,this.dataset.nome)" title="'+aEsc(aT('salvar'))+'">✓</button>' +
         '<span class="cargasalvo" id="'+eid+'-ok">✓</span>' +
-      '</span>';
+      '</span></span>';
+  const serChip = ex.series ? '<span class="ec-chip'+(sugVolume?' ec-chip-fase':' ec-chip-s')+(seriesTotal?' ec-chip-progresso'+(seriesFeitasHoje>=seriesTotal?' ec-chip-completo':''):'')+'" id="'+eid+'-series-badge" data-total="'+seriesTotal+'" title="'+aEsc(seriesExibir)+(seriesTotal?(aLang==='en'?' — tap to count a set':' — toque para contar uma série'):'')+'"'+(seriesTotal?' role="button" data-eid="'+eid+'" onclick="aContarSerieConcluida(this.dataset.eid)" style="--fill:'+seriesFillPct+'%"':'')+'>'+(sugVolume?'🧭 ':'')+seriesBadgeHTML+(seriesTotal?' <span id="'+eid+'-series-count" style="opacity:.8;font-variant-numeric:tabular-nums">'+(seriesFeitasHoje>=seriesTotal?'✓ ':'')+seriesFeitasHoje+'/'+seriesTotal+'</span>':'')+'</span>' : '';
   const chips = [
-    ex.series ? '<span class="ec-chip'+(sugVolume?' ec-chip-fase':' ec-chip-s')+(seriesTotal?' ec-chip-progresso'+(seriesFeitasHoje>=seriesTotal?' ec-chip-completo':''):'')+'" id="'+eid+'-series-badge" data-total="'+seriesTotal+'" title="'+aEsc(seriesExibir)+(seriesTotal?(aLang==='en'?' — tap to count a set':' — toque para contar uma série'):'')+'"'+(seriesTotal?' role="button" data-eid="'+eid+'" onclick="aContarSerieConcluida(this.dataset.eid)" style="--fill:'+seriesFillPct+'%"':'')+'>'+(sugVolume?'🧭 ':'')+seriesBadgeHTML+(seriesTotal?' <span id="'+eid+'-series-count" style="opacity:.8;font-variant-numeric:tabular-nums">'+(seriesFeitasHoje>=seriesTotal?'✓ ':'')+seriesFeitasHoje+'/'+seriesTotal+'</span>':'')+'</span>' : '',
     emConj ? '' : '<span class="ec-chip'+(sugVolume?' ec-chip-fase':' ec-chip-r')+(restExibir?'':' ec-chip-rlivre')+' ec-chip-clicavel" data-tempo="'+aEsc(restExibir||'60s')+'" data-nome="'+aEsc(ex.nome||'')+'" data-eid="'+eid+'" onclick="aIniciarDescanso(this.dataset.tempo,this.dataset.nome,this.dataset.eid)" title="'+(aLang==='en'?'Tap to start a rest timer':'Toque pra iniciar o cronômetro de descanso')+'">⏱ '+aEsc(restExibir||'60s')+'</span>',
     mostrarSugestao ? '<span class="ec-chip ec-chip-sug" title="'+aEsc(sugestaoTitle)+'">'+(sugestao.origem==='padrao_movimento'?'🎯 ':'💡 ')+aEsc(sugestao.valor)+'kg</span>' : '',
     cargaBadge
@@ -1937,13 +1976,15 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
     '<div class="ec-hd">' +
       '<div class="ec-info">' +
         '<div class="ec-name-row">' +
+          serChip +
+          '<span class="ec-n">'+aEsc(ex.nome)+(ex.obs ? '<span class="ec-o"> (<span class="ec-o-i">💬</span> '+aEsc(ex.obs)+')</span>' : '')+'</span>' +
+        '</div>' +
+        '<div class="ec-chips">' +
           '<span class="ec-done-wrap">' +
             '<input type="checkbox" class="ec-done-cb" id="'+eid+'-done" data-eid="'+eid+'" onchange="aToggleDone(this.dataset.eid)" title="'+aEsc(aT('marcar_feito'))+'">' +
             '<span class="ec-done-hint" aria-hidden="true">✔️</span>' +
           '</span>' +
-          '<span class="ec-n">'+aEsc(ex.nome)+(ex.obs ? '<span class="ec-o"> (<span class="ec-o-i">💬</span> '+aEsc(ex.obs)+')</span>' : '')+'</span>' +
-        '</div>' +
-        (chips ? '<div class="ec-chips">'+chips+'</div>' : '') +
+        chips + '</div>' +
         baseRefHTML +
       '</div>' +
       (emb ? '<button class="vbtn" data-emb="'+aEsc(emb)+'" data-vs="'+eid+'-vs" onclick="aToggleVideo(this,this.dataset.vs,this.dataset.emb)"><span>'+(aLang==='en'?'Video':'Vídeo')+'</span></button>' : '') +
@@ -3694,6 +3735,7 @@ function aRenderProtocolo(proto){
   document.querySelectorAll('.tBtnVoltar').forEach(btn => btn.textContent = aT('voltar_para_hoje'));
   document.getElementById('tAlunoNome').textContent = aAlunoRow.email || aAlunoRow.nome;
   aAtualizarSaudacao();
+  aRegistrarVisto();
   if (!window._movhRelogioIniciado) { window._movhRelogioIniciado = true; aIniciarRelogio(); }
   // Banner aviso renovação
   const bannerRen = document.getElementById('banner-renovar');
