@@ -1222,7 +1222,7 @@ function aPreviewSafetyNet(){
 const A_APP_URL = 'https://movh.netlify.app/';
 function aIrParaRegistro(){
   try { sessionStorage.setItem('movh-via-treino', '1'); } catch(e){}
-  window.location.href = window.location.pathname + '?bemvindo=1';
+  window.location.href = aBaseApp() + '?bemvindo=1';
 }
 function aPreviewErroTela(err){
   const en = (navigator.language || '').toLowerCase().indexOf('en') === 0;
@@ -1242,7 +1242,7 @@ function aPreviewErroTela(err){
   if (err) { const c = document.createElement('div'); c.style.cssText = 'font-size:10px;opacity:.45;margin-bottom:16px;word-break:break-word'; c.textContent = String(err.message || err.code || err); box.appendChild(c); }
   const b = document.createElement('button'); b.style.cssText = 'padding:10px 18px;border-radius:99px;border:1px solid var(--bd,#DDDBD4);background:var(--card,#fff);color:inherit;font-weight:700;cursor:pointer';
   b.textContent = en ? 'Go to login' : 'Ir para o login';
-  b.onclick = function(){ window.location.href = window.location.pathname; };
+  b.onclick = function(){ window.location.href = aBaseApp(); };
   box.appendChild(b);
   d.innerHTML = ''; d.appendChild(box);
 }
@@ -1449,10 +1449,51 @@ function aRegistrarVisto(){
     aClient.from('alunos').update({ treino_visto_em: new Date().toISOString() }).eq('id', aAlunoRow.id).then(function(){}, function(){});
   } catch(e){}
 }
+// Rota pública /coletivas (ou ?coletivas=1): aulas coletivas sem login. O Netlify reescreve
+// /coletivas para o index.html (arquivo _redirects do repo do app).
+function aEhRotaColetivas(){
+  let p = window.location.pathname.toLowerCase();
+  while (p.length > 1 && p.charAt(p.length - 1) === '/') p = p.slice(0, -1);
+  return p.slice(-10) === '/coletivas' || new URLSearchParams(window.location.search).get('coletivas') === '1';
+}
+function aBaseApp(){
+  const p = window.location.pathname;
+  const i = p.toLowerCase().lastIndexOf('/coletivas');
+  return (aEhRotaColetivas() && i >= 0) ? (p.slice(0, i) + '/') : p;
+}
+async function aBootColetivas(){
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('loadingScreen').style.display = 'flex';
+  let dados = null, err = null;
+  try { const r = await aClient.rpc('get_coletivas_publico'); dados = r.data; err = r.error; } catch(e) { err = e; }
+  document.getElementById('loadingScreen').style.display = 'none';
+  window._movhPreview = true; window._movhColetivasPublico = true;
+  aAlunoRow = { id: null, nome: '', email: '', professor_id: null, mostra_aulas_coletivas: true };
+  document.body.classList.add('preview-mode');
+  const ph = document.querySelector('#treinoScreen .ph'); if (ph) ph.style.display = 'none';
+  ['tDashboard','tSemanaCompleta','tProgresso','tAvaliacaoUpload'].forEach(function(id){ const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+  document.getElementById('tColetivas').style.display = 'block';
+  document.querySelectorAll('#tColetivas .tBtnVoltar').forEach(function(b){ b.style.display = 'none'; });
+  const en = aLang === 'en';
+  const btn = document.getElementById('tRegistroBtn');
+  if (btn) { btn.textContent = en ? 'Create account' : 'Fazer o registro'; btn.style.display = 'inline-block'; }
+  document.getElementById('treinoScreen').style.display = 'block';
+  if (!window._movhRelogioIniciado) { window._movhRelogioIniciado = true; try { aIniciarRelogio(); } catch(e) {} }
+  const el = document.getElementById('tColetivasConteudo');
+  if (err) {
+    console.error('[MOVH] Erro ao carregar coletivas:', err);
+    el.innerHTML = '<div style="padding:24px 8px;text-align:center;color:var(--t2)">' + (en ? 'Could not load the group classes. Try again in a moment.' : 'Não foi possível carregar as aulas coletivas. Tente novamente em instantes.') + '</div>';
+    return;
+  }
+  aColetivasCache = (dados && typeof dados === 'object') ? dados : {};
+  aColetivasSemana = aColetivasSegundaDaSemana(new Date());
+  el.innerHTML = aMontarColetivas(aColetivasCache);
+}
 async function aBoot(sessionParam){
   if (!sessionParam) {
     const tkTreino = new URLSearchParams(window.location.search).get('treino');
     if (tkTreino) { await aBootPreview(tkTreino); return; }
+    if (aEhRotaColetivas()) { await aBootColetivas(); return; }
   }
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('loadingScreen').style.display = 'flex';
@@ -2204,7 +2245,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = '5179ddd86d4b';
+const A_BUILD = 'a86e28fd5620';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
