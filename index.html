@@ -2254,7 +2254,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = 'b4b6e1363259';
+const A_BUILD = '539b130a4a0d';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -2269,6 +2269,24 @@ async function aChecarVersao(){
     location.reload();
   } catch(e) {}
 }
+function aLogoAplicar(j){
+  try {
+    var c = document.getElementById('aLogoClaro'), e = document.getElementById('aLogoEscuro');
+    if (!j || !j.c) return;
+    if (c) c.src = j.c;
+    if (e) e.src = j.e || j.c;
+  } catch(x) {}
+}
+async function aLogoRemota(){
+  try { var ch = localStorage.getItem('movh-logo-login'); if (ch) aLogoAplicar(JSON.parse(ch)); } catch(x) {}
+  try {
+    var r = await aClient.from('landing_config').select('config').limit(5);
+    var rows = (r && r.data) || [], j = null;
+    for (var i = 0; i < rows.length; i++) { var l = rows[i].config && rows[i].config.logo_login; if (l && l.c && (!j || (l.t || 0) > (j.t || 0))) j = l; }
+    if (j) { aLogoAplicar(j); try { localStorage.setItem('movh-logo-login', JSON.stringify(j)); } catch(x) {} }
+  } catch(x) {}
+}
+window.addEventListener('load', function(){ aLogoRemota(); });
 window.addEventListener('load', function(){ setTimeout(aChecarVersao, 3000); });
 document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') aChecarVersao(); });
 window.addEventListener('pageshow', function(ev){ if (ev.persisted) aChecarVersao(); });
