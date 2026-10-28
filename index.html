@@ -1298,7 +1298,7 @@ async function aBootPreview(token){
   (function(){
     const dow = h.getDay();
     const hojeCasa = (proto.conteudo.semanas || []).every(function(sem){ return (sem.dias || []).some(function(d){ return aDiaSemanaEfetivo(d) === DIAS_SEMANA_ORDEM[dow]; }); });
-    if (hojeCasa) return;
+    if (hojeCasa || (proto.conteudo && proto.conteudo.diasReais)) return;
     (proto.conteudo.semanas || []).forEach(function(sem){
       (sem.dias || []).forEach(function(d, di){ d.diaSemana = DIAS_SEMANA_ORDEM[(dow + di) % 7]; });
     });
@@ -2254,7 +2254,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = 'd985a95e5bc2';
+const A_BUILD = '8f778daea82a';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
