@@ -2286,7 +2286,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = 'ab22dbbb812f';
+const A_BUILD = '5410cf034d3a';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -3704,6 +3704,7 @@ function aMontarColetivas(dados){
     var isC = b.tipo === 'condicionamento';
     var titulo = isC ? ('🔥 ' + (en ? 'Conditioning' : 'Condicionamento')) : ('🏋️ ' + (b.nome ? aEsc(b.nome) : (en ? 'Block' : 'Bloco')));
     var meta = (!isC && b.conjugado) ? (en ? 'Superset' : 'Conjugado') + (b.series ? (' · ' + aEsc(b.series) + (en ? ' sets' : ' séries')) : '') : '';
+    var cor = (b.cor && /^#[0-9a-fA-F]{6}$/.test(b.cor)) ? b.cor : '';
     var corpo = '';
     if (isC) {
       if (b.formato) corpo += '<div class="cl-meta"><b>' + (en ? 'Format' : 'Formato') + ':</b> ' + aEsc(b.formato) + '</div>';
@@ -3716,7 +3717,7 @@ function aMontarColetivas(dados){
       corpo += '<div class="cl-ex-r"><span class="cl-ex-n">' + pl + '<span>' + aEsc(ex.nome) + '</span></span><span class="cl-ex-c">' + sr + '</span></div>';
     });
     if (b.detalhes) corpo += '<div class="cl-det">' + aEsc(b.detalhes) + '</div>';
-    html += '<div class="bloco"><div class="bh" onclick="aColToggle(this)"><div class="dot" style="border-left-color:' + (isC ? '#D45828' : 'var(--P)') + '"></div><span class="bt">' + titulo + '</span>' + (meta ? '<span class="bm">' + meta + '</span>' : '') + '<span class="bt-arr">▾</span></div><div class="exl" style="padding:6px 12px 10px">' + corpo + '</div></div>';
+    html += '<div class="bloco"' + (cor ? ' style="border-left:4px solid ' + cor + '"' : '') + '><div class="bh" onclick="aColToggle(this)"><div class="dot" style="border-left-color:' + (cor || (isC ? '#D45828' : 'var(--P)')) + '"></div><span class="bt">' + titulo + '</span>' + (meta ? '<span class="bm">' + meta + '</span>' : '') + '<span class="bt-arr">▾</span></div><div class="exl" style="padding:6px 12px 10px' + (cor ? ';background:color-mix(in srgb,' + cor + ' 7%,transparent)' : '') + '">' + corpo + '</div></div>';
   });
   return html + aColLogo();
 }
