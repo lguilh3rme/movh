@@ -1078,9 +1078,38 @@ async function aPixCarregar(){
   window._aPixCfg = cfg;
   return cfg;
 }
+function aOfertaSituacao(){
+  var f = aAlunoRow && aAlunoRow.acesso_fim; if (!f) return 'novo';
+  var hoje = new Date(); hoje.setHours(12, 0, 0, 0);
+  var d = Math.round((hoje - new Date(f + 'T12:00:00')) / 86400000);
+  return d > 7 ? 'reativacao' : 'renovacao';
+}
+function aOfertaAtiva(){
+  var c = aAlunoRow && aAlunoRow.cobranca;
+  if (!c || typeof c !== 'object' || c.status !== 'aberta' || !(Number(c.valor) > 0)) return null;
+  try { if (localStorage.getItem('movh-oferta-paga-' + (c.criado_em || ''))) return null; } catch(e) {}
+  return c;
+}
+// Planos mostrados no fluxo de renovar, conforme a situação do aluno; a oferta do professor (plano e valor combinados) vem primeiro
+function aPixPlanosSituacao(todos){
+  var sit = aOfertaSituacao(), of = aOfertaAtiva();
+  var tp = function(p){ return p.tipo || 'novo'; };
+  var lista = sit === 'novo' ? todos.filter(function(p){ return tp(p) === 'novo'; }) : todos.filter(function(p){ return tp(p) === sit || (tp(p) === 'novo' && p.dias > 30); });
+  if (!lista.length) lista = todos;
+  lista = lista.filter(function(p){ return tp(p) === sit; }).concat(lista.filter(function(p){ return tp(p) !== sit; }));
+  if (of) {
+    var base = null; todos.forEach(function(p){ if (p.id === of.plano_id) base = p; });
+    var op = { id: of.plano_id || 'oferta', nome: of.plano_nome || (base && base.nome) || 'Plano', dias: of.dias || (base && base.dias) || 30, precoBR: Number(of.valor), precoUK: (base && base.precoUK) || 0, tipo: of.tipo || sit, oferta: true };
+    lista = [op].concat(lista.filter(function(p){ return p.id !== op.id; }));
+  }
+  return lista;
+}
 async function aAbrirRenovar(){
   var cfg = await aPixCarregar();
-  aPixEst = { etapa:'escolha', plano:(cfg.planos.length === 1 ? cfg.planos[0].id : null), item:0, txid:'', msg:'', pend:null };
+  if (!cfg.todos) cfg.todos = cfg.planos;
+  cfg.planos = aPixPlanosSituacao(cfg.todos);
+  var ofAtiva = aOfertaAtiva();
+  aPixEst = { etapa:'escolha', plano:((ofAtiva || aOfertaSituacao() !== 'novo') ? cfg.planos[0].id : (cfg.planos.length === 1 ? cfg.planos[0].id : null)), item:0, txid:'', msg:'', pend:null };
   var old = document.getElementById('movh-renovar-overlay'); if (old) old.remove();
   var ov = document.createElement('div'); ov.id = 'movh-renovar-overlay'; ov.className = 'sessao-concluida-overlay';
   ov.innerHTML = '<div class="sessao-concluida-card rn-card" id="rn-card"></div>';
@@ -1103,7 +1132,10 @@ function aPixDesenhar(){
   var pix = cfg.pix && cfg.pix.ativo ? cfg.pix : null;
   var itens = pix ? (pix.itens || []).filter(function(i){ return i && i.chave; }) : [];
   var pl = null; cfg.planos.forEach(function(p){ if (p.id === aPixEst.plano) pl = p; });
-  var h = '<div class="rn-x" data-rn="fechar">×</div><div class="sc-emoji">💳</div><div class="sc-titulo">' + (en ? 'Renew access' : 'Renovar acesso') + '</div>';
+  var sitR = aOfertaSituacao();
+  var tituloR = sitR === 'novo' ? (en ? 'Activate access' : 'Ativar acesso') : sitR === 'reativacao' ? (en ? 'Reactivate access' : 'Reativar acesso') : (en ? 'Renew access' : 'Renovar acesso');
+  var h = '<div class="rn-x" data-rn="fechar">×</div><div class="sc-emoji">💳</div><div class="sc-titulo">' + tituloR + '</div>';
+  if (aOfertaAtiva() && aPixEst.etapa !== 'aguardando') h += '<div class="rn-pend">💬 ' + (en ? 'Offer from your coach' : 'Oferta do seu professor') + '</div>';
   if (aPixEst.etapa === 'aguardando') {
     h += '<div class="sc-sub">' + (en ? 'Thanks! Your coach was notified and will release your access as soon as the payment is confirmed.' : 'Obrigado! Avisei o professor. Seu acesso é liberado assim que ele confirmar o pagamento.') + '</div>';
     h += '<button class="rpe-enviar" data-rn="zap">' + (en ? '💬 Send receipt on WhatsApp' : '💬 Enviar comprovante no WhatsApp') + '</button>';
@@ -1179,6 +1211,7 @@ async function aPixAcao(acao, v){
     if (!pl) return;
     var btn = document.querySelector('#rn-card [data-rn=paguei]'); if (btn) btn.disabled = true;
     var r = await aClient.from('pagamentos_pix').insert({ aluno_id: aAlunoRow.id, professor_id: aAlunoRow.professor_id, plano_id: pl.id, plano_nome: pl.nome, dias: pl.dias, valor: pl.precoBR, txid: aPixEst.txid, status: 'pendente' });
+    try { var ofP = aOfertaAtiva(); if (ofP && !r.error) localStorage.setItem('movh-oferta-paga-' + (ofP.criado_em || ''), '1'); } catch(e) {}
     if (r && r.error) { aPixEst.msg = (aLang === 'en' ? 'Could not notify your coach. Send the receipt on WhatsApp.' : 'Não consegui avisar o professor. Envie o comprovante pelo WhatsApp.'); aPixDesenhar(); return; }
     aPixEst.etapa = 'aguardando'; aPixDesenhar();
   }
@@ -2253,7 +2286,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = '3950e09c3ee3';
+const A_BUILD = 'ab22dbbb812f';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -3567,12 +3600,14 @@ function aNotifFechar(id){
 function aMontarNotifs(){
   const box = document.getElementById('tNotifs'); if (!box) return;
   const en = aLang === 'en', it = [];
+  const ofN = aOfertaAtiva();
+  if (ofN && !aNotifFechada('oferta', 1)) it.push({ k:'oferta', i:'💬', go:'aAbrirRenovar()', t: en ? 'Offer from your coach' : 'Oferta do seu professor', s: aEsc(ofN.plano_nome || '') + ' · ' + aPixMoeda(ofN.valor) + (en ? ' — tap to pay' : ' — toque para pagar') });
   const sol = (aAvaliacoesFisicas || []).find(function(v){ return v.status === 'solicitada'; });
   if (sol && !aNotifFechada('aval', 1)) it.push({ k:'aval', i:'📸', t: en ? 'Physical assessment requested' : 'Avaliação física solicitada', s: en ? 'Send your photos' : 'Toque para enviar suas fotos' });
   let re = ''; try { re = aMontarAvisoReteste(); } catch(e) {}
   if (re && !aNotifFechada('cond', 7)) it.push({ k:'cond', i:'🏃', t: en ? 'Conditioning test' : 'Teste de condicionamento', s: en ? 'Tap to see the details' : 'Toque para ver os detalhes' });
   box.innerHTML = it.map(function(n){
-    return '<div class="nt-wrap"><button type="button" class="nt-it" onclick="aVerProgresso();window.scrollTo(0,0)"><span class="nt-i">' + n.i + '</span><span class="nt-tx"><b>' + n.t + '</b><i>' + n.s + '</i></span><span class="nt-go">›</span></button>' +
+    return '<div class="nt-wrap"><button type="button" class="nt-it" onclick="' + (n.go || 'aVerProgresso();window.scrollTo(0,0)') + '"><span class="nt-i">' + n.i + '</span><span class="nt-tx"><b>' + n.t + '</b><i>' + n.s + '</i></span><span class="nt-go">›</span></button>' +
       '<button type="button" class="nt-x" data-k="' + n.k + '" onclick="aNotifFechar(this.dataset.k)" aria-label="' + (en ? 'Dismiss' : 'Dispensar') + '">×</button></div>';
   }).join('');
 }
