@@ -2271,14 +2271,7 @@ function aXoRender(){
   const carga = cin && cin.value !== '' ? cin.value : '';
   let vid = '';
   if (i.emb) {
-    const idm = i.emb.split('/embed/')[1] || '';
-    if ((feitas === 0 || aXoVid) && !aXoPlay) {
-      vid = '<div class="xo-vid xo-fac' + (i.sh ? ' xo-sh' : '') + '">' + aThumbHtml(i.emb, '') + '<button class="xo-playbtn" aria-label="Reproduzir" onclick="aXoPlay=true;aXoRender()"><i>▶</i></button></div>';
-    } else if (feitas === 0 || aXoVid) {
-      vid = '<div class="xo-vid' + (i.sh ? ' xo-sh' : '') + '"><iframe loading="lazy" allow="autoplay; encrypted-media" src="' + aEsc(i.emb) + '?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&rel=0&playlist=' + aEsc(idm) + '"></iframe><button aria-label="Ampliar" data-emb="' + aEsc(i.emb) + '" data-sh="' + (i.sh ? '1' : '0') + '" onclick="aAbrirVideoModal(this.dataset.emb,this.dataset.sh==1)"></button></div>';
-    } else {
-      vid = '<button class="xo-vmini" onclick="aXoVid=true;aXoRender()"><i>▶</i><div><b>' + (aLang==='en'?'Watch form':'Ver execução') + '</b><span>' + (aLang==='en'?'tap to expand':'toque para ampliar') + '</span></div></button>';
-    }
+    vid = '<button class="xo-vmini" data-emb="' + aEsc(i.emb) + '" data-sh="' + (i.sh ? '1' : '0') + '" onclick="aAbrirVideoModal(this.dataset.emb,this.dataset.sh==1)"><i>▶</i><div><b>' + (aLang==='en'?'Watch form':'Ver execução') + '</b><span>' + (aLang==='en'?'tap to open the video':'toque para abrir o vídeo') + '</span></div></button>';
   }
   const info = [ (ult && ult.carga != null) ? ((aLang==='en'?'Last time ':'Última vez ') + ult.carga + ' kg') : '', rec ? ('🏆 ' + (aLang==='en'?'best ':'recorde ') + rec + ' kg') : '' ].filter(Boolean).join(' · ');
   el.innerHTML =
@@ -2532,7 +2525,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = 'b40176f455f1';
+const A_BUILD = '4c880ce9b106';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -3517,6 +3510,7 @@ function aVoltarHoje(){
   document.getElementById('tColetivas').style.display = 'none';
   document.getElementById('tDashboard').style.display = 'block';
   aHeaderForcar(false);
+  { const _hb = document.getElementById('tHeaderRecolhivel'); if (_hb && _hb.style.display === 'none') aToggleHeader(); window._aHdrPrev = null; }
 }
 // Recolhe sozinho a faixa da semana no topo nas telas em que ela não serve (progresso, semana completa, coletivas) e devolve ao estado anterior ao voltar para hoje.
 function aHeaderForcar(rec){
@@ -4492,6 +4486,8 @@ function aRenderProtocolo(proto){
   // mostra o dashboard por padrão (visão "Hoje")
   document.getElementById('tDashboard').style.display = 'block';
   document.getElementById('tSemanaCompleta').style.display = 'none';
+  window._aHdrPrev = null; // v60.4: o cabeçalho (saudação, descrição, faixa de dias) sempre volta visível ao abrir o treino
+  { const _hb = document.getElementById('tHeaderRecolhivel'); if (_hb && _hb.style.display === 'none') aToggleHeader(); }
   document.getElementById('treinoScreen').style.display = 'block';
 }
 
