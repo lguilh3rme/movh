@@ -2506,7 +2506,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = '207768bbaecc';
+const A_BUILD = '13e29441c989';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -3082,7 +3082,7 @@ function aMontarTimelinePeriodizacao(lista, semanaAtualGlobal, ctxPrefix){
   const testeMarkers = (aTestesAgendados||[]).map(t=>
     '<div class="a-pzt-teste-marker" style="left:'+Math.min(99,Math.max(0,t.semana/total*100))+'%" title="🎯 '+(aLang==='en'?'Test':'Teste')+' — '+(aLang==='en'?'week ':'semana ')+(t.semana+1)+(t.dia?' · '+aEsc(aDiaExibicao(t.dia)):'')+'">🎯</div>'
   ).join('');
-  const legenda = Object.keys(ft).map(k=>'<span>'+ft[k].emoji+' '+ft[k].label+'</span>').join('');
+  const legenda = Object.keys(ft).filter(k=>k!=='deload').map(k=>'<span>'+ft[k].emoji+' '+ft[k].label+'</span>').join('');
   const detId = aPztDetId(ctxPrefix);
   return '<div class="a-pzt-wrap" id="' + detId + '" style="display:none">'+
     '<div class="a-pzt-title">'+(aLang==='en'?'Planned periodization':'Periodização prevista')+' ('+total+(aLang==='en'?' weeks)':' semanas)')+'</div>'+
@@ -3224,7 +3224,11 @@ function aCalcularAgendaHoje(proto, semanas, dataAlvoISO){
 // Mesma lógica de condSugestao() do Gerador, replicada aqui pro app do aluno
 // (puramente informativo — deriva duração/zona sugeridas a partir da fase do
 // mesociclo, sem mudar nada do que o professor já digitou).
-function aCondSugestao(faseKey, duracaoBase, zonaBase){
+function aCondFatorBase(w){
+  w = Math.max(1, parseInt(w) || 1); const k = (w-1)%4, c = Math.floor((w-1)/4);
+  return { f: 1 + 0.12*c + (k===3 ? 0 : 0.08*k), assim: k===3, ciclo: c };
+}
+function aCondSugestao(faseKey, duracaoBase, zonaBase, sem, durSem){
   const ft = aFasesTemplate()[faseKey];
   if (!ft) return null;
   const m = String(duracaoBase||'').match(/(\d+)/);
@@ -3234,6 +3238,12 @@ function aCondSugestao(faseKey, duracaoBase, zonaBase){
   let minutos = minBase, zonaSug = zonaBase || 'Z2', obsTxt = '';
   if (faseKey === 'base') {
     minutos = minBase; zonaSug = zonaBase || 'Z2'; obsTxt = 'ritmo constante, construção de base';
+    const w = parseInt(sem) || 0;
+    if (minBase && w) {
+      const N = parseInt(durSem) || 8, r = aCondFatorBase(w);
+      minutos = Math.min(Math.round(minBase*r.f), Math.round(minBase*1.3));
+      obsTxt = (r.assim ? 'semana de assimilação: consolida, só Z2, sem intervalado' : 'semana de carga ' + w + '/' + N + (w > 1 ? ': +8% sobre a anterior' : ': duração de partida')) + '; ~80% em Z1–Z2 (fala frases curtas)' + ((!r.assim && r.ciclo >= 1) ? '; opcional 1 sessão/sem de qualidade Z4 (4 × 3-4 min, 2-3 min leve) se RPE ≤7 e sem dor' : '') + '; dor ou RPE ≥9: repita a semana anterior';
+    }
   } else if (faseKey === 'intensificacao') {
     minutos = minBase ? Math.max(10, Math.round(minBase*0.85)) : minBase;
     zonaSug = zonas[Math.min(zIdx+1,4)]; obsTxt = 'menos duração, mais intensidade';
@@ -3262,7 +3272,7 @@ function aBlocoOut(b, faseAtual, ctxPrefix, bIdx, semanaDentroFase, duracaoSeman
     const zonaChip = b.zonaFC ? '<span class="cond-chip">💓 '+aEsc(A_ZONA_FC_LABEL[b.zonaFC]||b.zonaFC)+'</span>' : '';
     let progHTML = '';
     if (b.progressaoAuto && faseAtual) {
-      const sug = aCondSugestao(faseAtual, b.duracao, b.zonaFC);
+      const sug = aCondSugestao(faseAtual, b.duracao, b.zonaFC, semanaDentroFase, duracaoSemanas);
       if (sug) {
         progHTML = '<div class="cond-prog">📍 Hoje: ' + aEsc(sug.duracaoTxt) + ' · ' + aEsc(sug.zonaTxt) + (sug.obsTxt ? ' — ' + aEsc(sug.obsTxt) : '') + '</div>';
       }
