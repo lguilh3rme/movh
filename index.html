@@ -227,6 +227,10 @@ body.preview-mode #tSairBtn,body.preview-mode #tBtnProgresso,body.preview-mode #
 .treino-ok-banner{background:linear-gradient(135deg,#38a169,#276749);color:#fff;border-radius:14px;padding:16px;text-align:center;font-size:15px;font-weight:700;margin:16px 0;letter-spacing:-.01em}
 .footer{text-align:center;font-size:11px;color:var(--t3);margin-top:2rem;display:flex;flex-direction:column;align-items:center;gap:8px}
 .footer-logo{width:170px;max-width:60%;height:auto;margin:18px auto 0}
+svg.footer-logo{display:block;width:190px;max-width:70%;color:var(--tx)}
+#tFooter{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+.dm.upd{border-color:var(--P);animation:updPulse 1.3s ease-in-out infinite}
+@keyframes updPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 color-mix(in srgb,var(--P) 55%,transparent)}50%{transform:scale(1.14);box-shadow:0 0 0 7px color-mix(in srgb,var(--P) 0%,transparent)}}
 .auth-logo{display:block;max-width:340px;width:92%;height:auto;margin:0 auto 14px}
 
 @media(max-width:480px){
@@ -731,7 +735,10 @@ body.xo-open #movh-descanso-widget{display:none!important}
 .bloco.bloco-concluido .bh .bloco-done-btn::after{opacity:1}
 .ec.xi-open{background:color-mix(in srgb,var(--P) 7%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--P) 55%,transparent);border-radius:12px}
 .xi{margin-top:8px;display:flex;flex-direction:column;gap:8px}
-.xi-dots{display:flex;gap:8px;flex-wrap:wrap}
+.xi-dots{display:flex;gap:8px;flex-wrap:wrap;flex:1;min-width:0}
+.xi-top{display:flex;align-items:flex-start;gap:8px}
+.xi-x{flex:none;border:1px solid var(--bd);background:var(--card);color:var(--t2);font-size:12px;font-weight:700;border-radius:10px;padding:7px 10px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.xi-x:active{transform:scale(.96)}
 .xi .xo-dot{width:34px;height:34px;font-size:14px}
 .xi .xo-dot.cur{animation:ecDica 1.6s ease-in-out infinite}
 .xi-row{display:flex;align-items:center;gap:6px}
@@ -2387,7 +2394,7 @@ function aXoRender(){
   const info = [ (ult && ult.carga != null) ? ((aLang==='en'?'Last time ':'Última vez ') + ult.carga + ' kg') : '', rec ? ('🏆 ' + (aLang==='en'?'best ':'recorde ') + rec + ' kg') : '' ].filter(Boolean).join(' · ');
   const rotulo = completo ? (aLang==='en'?'Next exercise':'Próximo exercício') : ((aLang==='en'?'Finish set ':'Concluir série ') + (feitas + 1));
   el.innerHTML =
-    '<div class="xi-dots">' + dots + '</div>' +
+    '<div class="xi-top"><div class="xi-dots">' + dots + '</div><button type="button" class="xi-x" onclick="aXoFechar()" aria-label="' + (aLang==='en'?'Exit':'Sair') + '">✕ ' + (aLang==='en'?'Exit':'Sair') + '</button></div>' +
     '<div class="xi-row"><button class="xi-b" aria-label="-" onclick="aXoAjustar(-2.5)">−</button>' +
     '<label class="xi-c"><input type="number" inputmode="decimal" step="0.5" min="0" id="aXoCargaIn" placeholder="0" value="' + aEsc(carga) + '" oninput="aXoGravarCarga(this.value)"><span>kg</span></label>' +
     '<button class="xi-b" aria-label="+" onclick="aXoAjustar(2.5)">+</button>' +
@@ -2661,7 +2668,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = '5df8164462d3';
+const A_BUILD = '15d50fb5accc';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -2669,9 +2676,13 @@ async function aChecarVersao(){
     if (!r.ok) return;
     const j = await r.json();
     if (!j || !j.build || j.build === A_BUILD) return;
+    // há versão nova: o 🔄 do topo pulsa até atualizar (se recarregar sozinho, a página nova já abre normal)
+    const rb = document.getElementById('tReloadBtn');
+    if (rb) { rb.classList.add('upd'); rb.title = (typeof aLang !== 'undefined' && aLang === 'en') ? 'New version: tap to update' : 'Nova versão: toque para atualizar'; }
     if (sessionStorage.getItem('movh-build-reload') === j.build) return;
     const ae = document.activeElement;
     if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
+    if (typeof aXoEid !== 'undefined' && aXoEid) return; // não recarrega no meio do exercício: fica pulsando
     sessionStorage.setItem('movh-build-reload', j.build);
     location.reload();
   } catch(e) {}
@@ -3414,7 +3425,7 @@ function cpPlano(b,w,N,zonaSeg){
     if(rit)o.dist=cpR2(o.tiros*esf*60/rit);
   }else if(mod==='caminhada'){
     var c0=esf||1,a0=rec||2,reps=Math.max(1,Math.round((tb||20)/(c0+a0)));
-    o.corre=Math.max(c0,Math.round(c0*f));o.anda=a0;o.reps=reps;o.tempo=reps*(o.corre+o.anda);
+    o.corre=c0+r.ciclo;o.anda=a0;o.reps=reps;o.tempo=reps*(o.corre+o.anda);
     if(rit)o.dist=cpR2(reps*o.corre*60/rit);
   }else if(tb){
     o.tempo=(mod==='regenerativo')?Math.round(tb):Math.round(tb*f);
@@ -4195,9 +4206,12 @@ function aColLogo(){
   return '<div class="col-logo"><img class="lg-claro" data-lg="c" src="' + c.src + '" alt="MOVH"/><img class="lg-escuro" data-lg="e" src="' + (e ? e.src : c.src) + '" alt="MOVH"/></div>';
 }
 function aLogoRodape(){
-  var c = document.getElementById('aLogoClaro'), e = document.getElementById('aLogoEscuro');
-  if (!c) return '';
-  return '<img class="footer-logo lg-claro" data-lg="c" src="' + c.src + '" alt="MOVH"/><img class="footer-logo lg-escuro" data-lg="e" src="' + (e ? e.src : c.src) + '" alt="MOVH"/>';
+  // LG + barras/gráfico em vermelho e "movh" embaixo (SVG: acompanha o tema claro/escuro)
+  return '<svg class="footer-logo" viewBox="0 0 200 112" role="img" aria-label="MOVH">' +
+    '<text x="8" y="64" font-family="Arial Black,Helvetica,Arial,sans-serif" font-weight="900" font-size="60" letter-spacing="-2" fill="currentColor">LG</text>' +
+    '<rect x="124" y="44" width="14" height="20" rx="3" fill="#E03131"/><rect x="144" y="28" width="14" height="36" rx="3" fill="#E03131"/><rect x="164" y="10" width="14" height="54" rx="3" fill="#E03131"/>' +
+    '<rect x="8" y="72" width="170" height="4" rx="2" fill="#E03131"/>' +
+    '<text x="93" y="104" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="700" font-size="22" letter-spacing="9" fill="currentColor">movh</text></svg>';
 }
 
 // Monta um pequeno gráfico de evolução (SVG puro, sem libs externas) a partir
