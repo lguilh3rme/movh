@@ -227,7 +227,6 @@ body.preview-mode #tSairBtn,body.preview-mode #tBtnProgresso,body.preview-mode #
 .treino-ok-banner{background:linear-gradient(135deg,#38a169,#276749);color:#fff;border-radius:14px;padding:16px;text-align:center;font-size:15px;font-weight:700;margin:16px 0;letter-spacing:-.01em}
 .footer{text-align:center;font-size:11px;color:var(--t3);margin-top:2rem;display:flex;flex-direction:column;align-items:center;gap:8px}
 .footer-logo{width:170px;max-width:60%;height:auto;margin:18px auto 0}
-svg.footer-logo{display:block;width:190px;max-width:70%;color:var(--tx)}
 #tFooter{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 .dm.upd{border-color:var(--P);animation:updPulse 1.3s ease-in-out infinite}
 @keyframes updPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 color-mix(in srgb,var(--P) 55%,transparent)}50%{transform:scale(1.14);box-shadow:0 0 0 7px color-mix(in srgb,var(--P) 0%,transparent)}}
@@ -2668,7 +2667,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = '15d50fb5accc';
+const A_BUILD = 'fc301732e28c';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -2695,6 +2694,16 @@ function aLogoAplicar(j){
     if (e) e.src = j.e || j.c;
     document.querySelectorAll('img[data-lg="c"]').forEach(function(x){ x.src = j.c; });
     document.querySelectorAll('img[data-lg="e"]').forEach(function(x){ x.src = j.e || j.c; });
+    aLogoRodapeAplicar(null, j);
+  } catch(x) {}
+}
+// rodapé: usa a logo própria (logo_rodape) se houver; senão acompanha a do login
+function aLogoRodapeAplicar(r, j){
+  try {
+    var f = (r && r.c) ? r : (aLogoRodapeFonte() || j);
+    if (!f || !f.c) return;
+    document.querySelectorAll('img[data-lr="c"]').forEach(function(x){ x.src = f.c; });
+    document.querySelectorAll('img[data-lr="e"]').forEach(function(x){ x.src = f.e || f.c; });
   } catch(x) {}
 }
 async function aLogoRemota(){
@@ -2702,8 +2711,15 @@ async function aLogoRemota(){
   try {
     var r = await aClient.from('landing_config').select('config').limit(5);
     var rows = (r && r.data) || [], j = null;
-    for (var i = 0; i < rows.length; i++) { var l = rows[i].config && rows[i].config.logo_login; if (l && l.c && (!j || (l.t || 0) > (j.t || 0))) j = l; }
+    var rr = null, achouCfg = false;
+    for (var i = 0; i < rows.length; i++) {
+      var cf = rows[i].config || {}; achouCfg = true;
+      var l = cf.logo_login; if (l && l.c && (!j || (l.t || 0) > (j.t || 0))) j = l;
+      var lr = cf.logo_rodape; if (lr && lr.c && (!rr || (lr.t || 0) > (rr.t || 0))) rr = lr;
+    }
+    if (achouCfg) { try { if (rr) localStorage.setItem('movh-logo-rodape', JSON.stringify(rr)); else localStorage.removeItem('movh-logo-rodape'); } catch(x) {} }
     if (j) { aLogoAplicar(j); try { localStorage.setItem('movh-logo-login', JSON.stringify(j)); } catch(x) {} }
+    aLogoRodapeAplicar(rr, j);
   } catch(x) {}
 }
 window.addEventListener('load', function(){ aLogoRemota(); });
@@ -4203,15 +4219,17 @@ function aColLogo(){
   var c = document.getElementById('aLogoClaro'), e = document.getElementById('aLogoEscuro');
   if (!c) return '';
   if (document.querySelector('#tFooter .footer-logo')) return '';
-  return '<div class="col-logo"><img class="lg-claro" data-lg="c" src="' + c.src + '" alt="MOVH"/><img class="lg-escuro" data-lg="e" src="' + (e ? e.src : c.src) + '" alt="MOVH"/></div>';
+  var r = aLogoRodapeFonte();
+  return '<div class="col-logo"><img class="lg-claro" data-lr="c" src="' + (r ? r.c : c.src) + '" alt="MOVH"/><img class="lg-escuro" data-lr="e" src="' + (r ? (r.e || r.c) : (e ? e.src : c.src)) + '" alt="MOVH"/></div>';
 }
+function aLogoRodapeFonte(){ try { var r = JSON.parse(localStorage.getItem('movh-logo-rodape') || 'null'); if (r && r.c) return r; } catch(x) {} return null; }
 function aLogoRodape(){
-  // LG + barras/gráfico em vermelho e "movh" embaixo (SVG: acompanha o tema claro/escuro)
-  return '<svg class="footer-logo" viewBox="0 0 200 112" role="img" aria-label="MOVH">' +
-    '<text x="8" y="64" font-family="Arial Black,Helvetica,Arial,sans-serif" font-weight="900" font-size="60" letter-spacing="-2" fill="currentColor">LG</text>' +
-    '<rect x="124" y="44" width="14" height="20" rx="3" fill="#E03131"/><rect x="144" y="28" width="14" height="36" rx="3" fill="#E03131"/><rect x="164" y="10" width="14" height="54" rx="3" fill="#E03131"/>' +
-    '<rect x="8" y="72" width="170" height="4" rx="2" fill="#E03131"/>' +
-    '<text x="93" y="104" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="700" font-size="22" letter-spacing="9" fill="currentColor">movh</text></svg>';
+  // logo do rodapé: a escolhida em "Logo do rodapé" no Gerador; sem escolha, a mesma do login
+  var c = document.getElementById('aLogoClaro'), e = document.getElementById('aLogoEscuro');
+  var r = aLogoRodapeFonte();
+  if (!r && !c) return '';
+  var sc = r ? r.c : c.src, se = r ? (r.e || r.c) : (e ? e.src : c.src);
+  return '<img class="footer-logo lg-claro" data-lr="c" src="' + sc + '" alt="MOVH"/><img class="footer-logo lg-escuro" data-lr="e" src="' + se + '" alt="MOVH"/>';
 }
 
 // Monta um pequeno gráfico de evolução (SVG puro, sem libs externas) a partir
