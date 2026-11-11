@@ -231,13 +231,47 @@ body.preview-mode #tSairBtn,body.preview-mode #tBtnProgresso,body.preview-mode #
 #tFooter .footer-logo{width:150px;max-width:50%;margin:6px auto 0}
 body.xo-bar #tFooter{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
 .concl-wrap{margin:16px 0 4px}
+.pdiv-row{display:flex;align-items:center;gap:8px;margin-top:5px;min-height:0}
+.pdiv-row .pdiv{margin-top:0;min-width:0}
+#tFaseBadgeSlot{margin-left:auto;flex:none}
+#tFaseBadgeSlot .fase-badge{margin:0!important;padding:4px 10px}
+body #treinoScreen .toprow{position:sticky!important;top:0;z-index:30;background:var(--bg);padding-bottom:6px!important;margin:0 0 4px!important;border-bottom:1px solid var(--bd)}
+#treinoScreen .toprow #tLinhaAlertas{grid-column:1/5;grid-row:2;display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:nowrap}
+#treinoScreen .toprow #tLinhaAlertas #tAcoesTopo{display:flex;gap:6px;flex:none;grid-column:auto;grid-row:auto}
+#treinoScreen .toprow #tLinhaAlertas #banner-renovar{flex:none;grid-column:auto;grid-row:auto;padding:3px 9px}
+#treinoScreen .toprow #tLinhaAlertas #tRelogioTop{flex:none;margin-left:auto;grid-column:auto;grid-row:auto;font-size:12px;min-width:0}
+#tNotifs{display:flex;align-items:center;gap:6px;min-width:0;flex:1 1 auto;overflow-x:auto;scrollbar-width:none}
+#tNotifs::-webkit-scrollbar{display:none}
+.nt-b{display:inline-flex;align-items:center;flex:none;border:1px solid #F59E0B;background:#FFF8E1;color:#7A4A00;border-radius:99px;font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden}
+[data-theme=dark] .nt-b{background:rgba(245,158,11,.12);color:#F7C766;border-color:rgba(245,158,11,.5)}
+.nt-bt{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:inherit;font:inherit;padding:4px 4px 4px 9px;cursor:pointer}
+.nt-bx{border:0;background:transparent;color:inherit;font-size:15px;line-height:1;padding:3px 8px 3px 2px;opacity:.65;cursor:pointer}
 .concl-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:15px 18px;border:0;border-radius:16px;background:linear-gradient(135deg,var(--G),color-mix(in srgb,var(--G) 72%,#000));color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 6px 18px color-mix(in srgb,var(--G) 38%,transparent);transition:transform .12s,filter .12s}
 .concl-btn:active{transform:scale(.98);filter:brightness(.95)}
 .concl-ic{display:inline-flex;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.22);align-items:center;justify-content:center;font-size:14px}
 .dash-actions{flex-wrap:wrap}
 .dash-actions .vksbtn{width:auto;flex:1 1 0;min-width:0}
 #tBtnPersonal{flex:1 1 100%;font-weight:700;border-color:color-mix(in srgb,var(--P) 45%,var(--bd))}
-.per-frame{width:100%;height:calc(100vh - 150px);min-height:420px;border:1px solid var(--bd);border-radius:12px;background:var(--card);display:block}
+.pr-top{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.pr-top .pr-sel,.pr-top .pr-nome{flex:1;min-width:0;margin:0}
+.pr-nome{font-weight:800;font-size:14px}
+.pr-sel{padding:8px 10px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;font-weight:700;font-size:13px}
+.pr-nb{padding:6px 11px!important;margin:0!important;width:auto!important}
+.pr-hoje{border-color:var(--P)!important}
+.pr-ex{display:grid;grid-template-columns:minmax(0,1fr) 62px auto 22px;gap:4px 6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd)}
+.pr-ex:last-of-type{border-bottom:0}
+.pr-n{display:flex;align-items:center;gap:6px;min-width:0;font-size:13px;font-weight:700;line-height:1.25}
+.pr-n .cl-play{width:22px;height:22px;font-size:9px}
+.pr-nm{min-width:0}
+.pr-sr{flex:none;font-size:11px;font-weight:800;color:var(--Pd)}
+.pr-in{width:100%;min-width:0;padding:6px 8px;border-radius:9px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit;font-size:13px}
+.pr-obs{grid-column:1/-1}
+.pr-obsb{border:1px solid var(--bd);background:var(--card);border-radius:9px;padding:4px 7px;cursor:pointer;font-size:13px;line-height:1;opacity:.75}
+.pr-obsb.on{border-color:var(--P);opacity:1}
+.pr-ck{width:22px;height:22px;accent-color:var(--G)}
+.pr-st{flex:none;font-size:11px;color:var(--G);min-width:10px}
+.pr-last{grid-column:1/-1;font-size:10.5px;color:var(--t3);cursor:pointer}
+.pr-hint{grid-column:1/-1;font-size:10.5px;color:var(--t2);line-height:1.45}
 .dm.upd{border-color:var(--P);animation:updPulse 1.3s ease-in-out infinite}
 @keyframes updPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 color-mix(in srgb,var(--P) 55%,transparent)}50%{transform:scale(1.14);box-shadow:0 0 0 7px color-mix(in srgb,var(--P) 0%,transparent)}}
 .auth-logo{display:block;max-width:340px;width:92%;height:auto;margin:0 auto 14px}
@@ -807,15 +841,18 @@ body.xo-open #movh-descanso-widget{display:none!important}
 <div id="treinoScreen" style="display:none">
   <div class="toprow">
     <div class="pt" id="tSaudacaoTitulo">Bom treino! 👊</div>
-    <div id="tAcoesTopo" class="acoes-topo"><button id="tRegistroBtn" class="regbtn" style="display:none" onclick="aIrParaRegistro()">Fazer o registro</button>
-    <button id="tInstBtn" class="regbtn instbtn" style="display:none" onclick="aInstallClick()">📲 Instalar</button></div>
-    <button id="banner-renovar" style="display:none" class="banner-renovar" onclick="aAbrirRenovar()" title="Renovar agora">
-      <span id="banner-renovar-txt">⚠️ Acesso vence em breve</span>
-    </button>
-    <span id="tRelogioTop" class="relogio-top"></span>
     <button class="dm" id="tReloadBtn" onclick="location.reload()" title="Recarregar" aria-label="Recarregar">🔄</button>
     <button class="dm" id="themeBtn" onclick="aToggleTheme()" title="Alternar tema">🌙</button>
     <button class="dm" id="tSairBtn" onclick="aLogoutConfirma()" title="Sair" aria-label="Sair">❌</button>
+    <div id="tLinhaAlertas">
+      <div id="tAcoesTopo" class="acoes-topo"><button id="tRegistroBtn" class="regbtn" style="display:none" onclick="aIrParaRegistro()">Fazer o registro</button>
+      <button id="tInstBtn" class="regbtn instbtn" style="display:none" onclick="aInstallClick()">📲 Instalar</button></div>
+      <button id="banner-renovar" style="display:none" class="banner-renovar" onclick="aAbrirRenovar()" title="Renovar agora">
+        <span id="banner-renovar-txt">⚠️ Acesso vence em breve</span>
+      </button>
+      <div id="tNotifs"></div>
+      <span id="tRelogioTop" class="relogio-top"></span>
+    </div>
   </div>
   <div class="wrap">
     <div class="ph">
@@ -826,7 +863,7 @@ body.xo-open #movh-descanso-widget{display:none!important}
       <div id="tProtoNome" style="display:none"></div>
       <div id="tHeaderRecolhivel">
         <div class="pd" id="tProtoDesc"></div>
-        <div class="pdiv" id="tProtoDiv" style="display:none"></div>
+        <div class="pdiv-row"><div class="pdiv" id="tProtoDiv" style="display:none"></div><span id="tFaseBadgeSlot"></span></div>
         <div class="alunolbl"><span id="tLogadoComo">Logado como</span> <span id="tAlunoNome">—</span></div>
         <div class="semana-strip" id="tSemanaStrip"></div>
       </div>
@@ -837,7 +874,6 @@ body.xo-open #movh-descanso-widget{display:none!important}
 
     <div id="aXo"></div>
     <div id="tDashboard" style="display:none">
-      <div id="tNotifs"></div>
       <div id="tSessaoProgresso" class="sessao-progresso" style="display:none">
         <div class="sp-bar-track"><div class="sp-bar-fill" id="tSpFill" style="width:0%"></div></div>
         <div class="sp-texto" id="tSpTexto"></div>
@@ -1363,7 +1399,7 @@ function aPixDesenhar(){
   var sitR = aOfertaSituacao();
   var tituloR = sitR === 'novo' ? (en ? 'Activate access' : 'Ativar acesso') : sitR === 'reativacao' ? (en ? 'Reactivate access' : 'Reativar acesso') : (en ? 'Renew access' : 'Renovar acesso');
   var h = '<div class="rn-x" data-rn="fechar">×</div><div class="sc-emoji">💳</div><div class="sc-titulo">' + tituloR + '</div>';
-  if (aOfertaAtiva() && aPixEst.etapa !== 'aguardando') h += '<div class="rn-pend">💬 ' + (en ? 'Offer from your coach' : 'Oferta do seu professor') + '</div>';
+  if (aOfertaAtiva() && aPixEst.etapa !== 'aguardando') h += '<div class="rn-pend">🔒 ' + (en ? 'Renewal offer' : 'Oferta de renovação') + '</div>';
   if (aPixEst.etapa === 'aguardando') {
     h += '<div class="sc-sub">' + (en ? 'Thanks! Your coach was notified and will release your access as soon as the payment is confirmed.' : 'Obrigado! Avisei o professor. Seu acesso é liberado assim que ele confirmar o pagamento.') + '</div>';
     h += '<button class="rpe-enviar" data-rn="zap">' + (en ? '💬 Send receipt on WhatsApp' : '💬 Enviar comprovante no WhatsApp') + '</button>';
@@ -2684,7 +2720,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = '6e0e20570e10';
+const A_BUILD = 'eb23910784ab';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -3249,6 +3285,8 @@ function aToggleTimelinePeriodizacao(btn){
 // Linha de badges do dia: só o badge de fase (data e "periodização prevista" saíram na v49).
 function aMontarLinhaBadges(semanaAtual){
   const b = aMontarBadgeFase(semanaAtual, 'dash');
+  const slot = document.getElementById('tFaseBadgeSlot');
+  if (slot) { slot.innerHTML = b; return ''; } // v62.14: o badge de fase mora na linha da divisão, no cabeçalho
   return b ? '<div class="dash-badges-row">' + b + '</div>' : '';
 }
 // Badge compacto e clicável ("📈 Periodização prevista ▾") — mesmo padrão do
@@ -3717,8 +3755,9 @@ function aMontarDashboardHoje(semanas, agenda){
   let h = aMontarLinhaBadges(semanaAtual);
   h += aMontarCardFase(semanaAtual, agenda.semanaDentroFase, 'dash');
   h += aMontarTimelinePeriodizacao(semanas, agenda.semanaGlobal, 'dash');
-  h += '<div class="dash-semfase">' + aEsc(semanaAtual.nome) + (diaHoje.sub ? ' · ' + aEsc(diaHoje.sub) : '') + '</div>';
-  h += '<div class="pt" style="font-size:17px;margin-bottom:12px">' + aEsc(diaHoje.nome) + (diaHoje.diaSemana ? ' <span style="font-weight:400;color:var(--t3);font-size:14px">(' + aEsc(aDiaExibicao(diaHoje.diaSemana)) + ')</span>' : '') + '</div>';
+  const _dsx = diaHoje.diaSemana ? aDiaExibicao(diaHoje.diaSemana) : '';
+  const _rep = _dsx && String(_dsx).trim().toLowerCase() === String(diaHoje.nome || '').trim().toLowerCase();
+  h += '<div class="pt" title="' + aAttr(diaHoje.sub || '') + '" style="font-size:17px;margin-bottom:8px">' + aEsc(diaHoje.nome) + (diaHoje.diaSemana && !_rep ? ' <span style="font-weight:400;color:var(--t3);font-size:14px">(' + aEsc(aDiaExibicao(diaHoje.diaSemana)) + ')</span>' : '') + '</div>';
   if (usandoSubstituto) {
     h += '<div class="dash-banner-teste" style="background:var(--Pl);color:var(--Pd)"><span>🔀 ' +
       (aLang==='en' ? 'Running a different workout today, by your choice.' : 'Você escolheu rodar esse treino hoje, fora da rotina normal.') +
@@ -4106,14 +4145,14 @@ function aMontarNotifs(){
   const box = document.getElementById('tNotifs'); if (!box) return;
   const en = aLang === 'en', it = [];
   const ofN = aOfertaAtiva();
-  if (ofN && !aNotifFechada('oferta', 1)) it.push({ k:'oferta', i:'💬', go:'aAbrirRenovar()', t: en ? 'Offer from your coach' : 'Oferta do seu professor', s: aEsc(ofN.plano_nome || '') + ' · ' + aPixMoeda(ofN.valor) + (en ? ' — tap to pay' : ' — toque para pagar') });
+  if (ofN && !aNotifFechada('oferta', 1)) it.push({ k:'oferta', i:'🔒', go:'aAbrirRenovar()', t: en ? 'Renewal offer' : 'Oferta de renovação', s: aEsc(ofN.plano_nome || '') + ' · ' + aPixMoeda(ofN.valor) + (en ? ' — tap to pay' : ' — toque para pagar') });
   const sol = (aAvaliacoesFisicas || []).find(function(v){ return v.status === 'solicitada'; });
   if (sol && !aNotifFechada('aval', 1)) it.push({ k:'aval', i:'📸', t: en ? 'Physical assessment requested' : 'Avaliação física solicitada', s: en ? 'Send your photos' : 'Toque para enviar suas fotos' });
   let re = ''; try { re = aMontarAvisoReteste(); } catch(e) {}
   if (re && !aNotifFechada('cond', 7)) it.push({ k:'cond', i:'🏃', t: en ? 'Conditioning test' : 'Teste de condicionamento', s: en ? 'Tap to see the details' : 'Toque para ver os detalhes' });
   box.innerHTML = it.map(function(n){
-    return '<div class="nt-wrap"><button type="button" class="nt-it" onclick="' + (n.go || 'aVerProgresso();window.scrollTo(0,0)') + '"><span class="nt-i">' + n.i + '</span><span class="nt-tx"><b>' + n.t + '</b><i>' + n.s + '</i></span><span class="nt-go">›</span></button>' +
-      '<button type="button" class="nt-x" data-k="' + n.k + '" onclick="aNotifFechar(this.dataset.k)" aria-label="' + (en ? 'Dismiss' : 'Dispensar') + '">×</button></div>';
+    return '<span class="nt-b"><button type="button" class="nt-bt" title="' + String(n.s || '').replace(/<[^>]*>/g, '').replace(/"/g, '') + '" onclick="' + (n.go || 'aVerProgresso();window.scrollTo(0,0)') + '"><span>' + n.i + '</span><span>' + n.t + '</span></button>' +
+      '<button type="button" class="nt-bx" data-k="' + n.k + '" onclick="aNotifFechar(this.dataset.k)" aria-label="' + (en ? 'Dismiss' : 'Dispensar') + '">×</button></span>';
   }).join('');
 }
 function aVerProgresso(){
@@ -4180,8 +4219,120 @@ function aVerPersonal(){
   document.getElementById('tColetivas').style.display = 'none';
   document.getElementById('tPersonal').style.display = 'block';
   aHeaderForcar(true);
-  var box = document.getElementById('tPersonalConteudo');
-  if (box && !box.querySelector('iframe')) box.innerHTML = '<iframe class="per-frame" title="Personal" src="personal/?personal=' + encodeURIComponent(aPersonalToken) + '"></iframe>';
+  aPerCarregar();
+}
+// Personal no app: mesmo visual das Aulas coletivas; grava carga / 💬 obs / ✓ feito nas mesmas RPCs da página /personal/
+var aPerAlunos = [], aPerAid = null, aPerDados = {}, aPerReg = {}, aPerHist = [], aPerSemana = null, aPerDia = null;
+function aPerKey(s){ return String(s == null ? '' : s).toLowerCase().normalize('NFD').split('').filter(function(c){ var n = c.charCodeAt(0); return n < 768 || n > 879; }).join('').replace(/[^a-z0-9]+/g, ' ').trim(); }
+function aPerBr(iso){ var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
+function aPerPick(a){ aPerAid = a.id; aPerDados = (a.dados && typeof a.dados === 'object') ? a.dados : {}; }
+async function aPerCarregar(){
+  var el = document.getElementById('tPersonalConteudo'); if (!el) return;
+  el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3)">Carregando…</div>';
+  try {
+    var r = await aClient.rpc('get_personal_painel', { p_token: aPersonalToken }); if (r.error) throw r.error;
+    var l = (r.data && Array.isArray(r.data.alunos)) ? r.data.alunos : null;
+    if (!l || !l.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3)">Nenhum aluno com treino salvo ainda.</div>'; return; }
+    aPerAlunos = l; var want = null; try { want = localStorage.getItem('movh_pp_aluno'); } catch(x) {}
+    aPerPick(l.find(function(x){ return x.id === want; }) || l[0]);
+    if (!aPerSemana) aPerSemana = aColetivasSegundaDaSemana(new Date());
+    await aPerCarregarReg(); aPerRender();
+  } catch(e) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3)">Não foi possível carregar.<br><br><button class="vksbtn" style="width:auto;padding:8px 16px" onclick="aPerCarregar()">Tentar de novo</button></div>';
+  }
+}
+async function aPerCarregarReg(){
+  aPerReg = {}; aPerHist = []; if (!aPerAid) return;
+  try {
+    var r = await aClient.rpc('get_personal_registros', { p_token: aPersonalToken, p_aluno: aPerAid });
+    if (r.error || !Array.isArray(r.data)) return;
+    aPerHist = r.data; r.data.forEach(function(x){ aPerReg[x.data + '|' + x.chave] = { carga: x.carga || '', obs: x.obs || '', feito: !!x.feito }; });
+  } catch(x) {}
+}
+async function aPerTrocarAluno(id){
+  var x = aPerAlunos.find(function(y){ return y.id === id; }); if (!x) return;
+  aPerPick(x); aPerDia = null; try { localStorage.setItem('movh_pp_aluno', id); } catch(e) {}
+  await aPerCarregarReg(); aPerRender();
+}
+function aPerSemanaMudar(d){ var x = new Date(aPerSemana); x.setDate(x.getDate() + d * 7); aPerSemana = x; aPerDia = null; aPerRender(); }
+function aPerHoje(){ aPerSemana = aColetivasSegundaDaSemana(new Date()); aPerDia = null; aPerRender(); }
+function aPerSelDia(k){ aPerDia = k; aPerRender(); }
+function aPerObsToggle(b){
+  var w = b.closest('.pr-ex'); if (!w) return; var o = w.querySelector('.pr-obs'); if (!o) return;
+  var abre = o.style.display !== 'block'; o.style.display = abre ? 'block' : 'none'; if (abre) o.focus();
+}
+function aPerHist1(w){ var h = w.querySelector('.pr-hint'); if (h) h.style.display = h.style.display === 'none' ? 'block' : 'none'; }
+async function aPerSalvar(el){
+  var row = el.closest('.pr-ex'); if (!row) return;
+  var ch = row.dataset.ch, n = row.dataset.ex, dd = aPerDia, al = aPerAid;
+  var carga = row.querySelector('.pr-carga').value.trim(), obs = row.querySelector('.pr-obs').value.trim(), feito = row.querySelector('.pr-ck').checked;
+  var st = row.querySelector('.pr-st'); st.textContent = '…'; st.style.color = '';
+  var ob = row.querySelector('.pr-obsb'); if (ob) ob.classList.toggle('on', !!obs);
+  aPerReg[dd + '|' + ch] = { carga: carga, obs: obs, feito: feito };
+  try {
+    var r = await aClient.rpc('salvar_personal_registro', { p_token: aPersonalToken, p_aluno: al, p_data: dd, p_chave: ch, p_exercicio: n, p_carga: carga, p_obs: obs, p_feito: feito });
+    if (r.error || r.data !== true) throw (r.error || new Error('nao salvou'));
+    st.textContent = '✓';
+    if (aPerAid === al) {
+      aPerHist = aPerHist.filter(function(h){ return !(h.data === dd && h.chave === ch); });
+      aPerHist.unshift({ data: dd, chave: ch, exercicio: n, carga: carga, obs: obs, feito: feito });
+      aPerHist.sort(function(a, b){ return a.data < b.data ? 1 : (a.data > b.data ? -1 : 0); });
+    }
+  } catch(e) { st.textContent = '⚠'; st.style.color = '#ff6b6b'; st.title = 'Não salvou. Mexa no campo de novo para tentar outra vez.'; }
+}
+function aPerRender(){
+  var el = document.getElementById('tPersonalConteudo'); if (!el) return;
+  var letras = ['D','S','T','Q','Q','S','S'], diasLabel = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  var hojeKey = aColetivasDateKey(new Date());
+  var fmt = function(d){ return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0'); };
+  var dados = aPerDados || {}, datas = [];
+  for (var i = 0; i < 7; i++) { var d0 = new Date(aPerSemana); d0.setDate(d0.getDate() + i); datas.push(d0); }
+  var keys = datas.map(aColetivasDateKey);
+  if (!aPerDia || keys.indexOf(aPerDia) < 0) aPerDia = keys.indexOf(hojeKey) >= 0 ? hojeKey : (keys.filter(function(k){ return (dados[k] || []).length; })[0] || keys[0]);
+  var nome = ''; aPerAlunos.forEach(function(a){ if (a.id === aPerAid) nome = a.nome || ''; });
+  var html = '<div class="pr-top">';
+  if (aPerAlunos.length > 1) html += '<select class="pr-sel" onchange="aPerTrocarAluno(this.value)">' + aPerAlunos.map(function(x){ return '<option value="' + aEsc(x.id) + '"' + (x.id === aPerAid ? ' selected' : '') + '>' + aEsc(x.nome || '') + '</option>'; }).join('') + '</select>';
+  else html += '<span class="pr-nome">🏋️ ' + aEsc(nome || 'Personal') + '</span>';
+  html += '<button class="vksbtn pr-nb" onclick="aPerSemanaMudar(-1)">‹</button><button class="vksbtn pr-nb" onclick="aPerSemanaMudar(1)">›</button><button class="vksbtn pr-nb pr-hoje" onclick="aPerHoje()">Hoje</button></div><div class="semana-strip">';
+  datas.forEach(function(d){
+    var k = aColetivasDateKey(d), tem = (dados[k] || []).length > 0;
+    html += '<div class="semana-strip-dia' + (tem ? ' tem-treino' : '') + (k === hojeKey ? ' hoje' : '') + (k === aPerDia ? ' sel' : '') + '" onclick="aPerSelDia(this.dataset.k)" data-k="' + k + '"><span>' + letras[d.getDay()] + '</span><span class="ssd-dot"></span><span class="ssd-data">' + fmt(d) + '</span></div>';
+  });
+  html += '</div>';
+  var dSel = datas[keys.indexOf(aPerDia)];
+  html += '<div style="font-size:14px;font-weight:800;margin:8px 0 6px">' + diasLabel[dSel.getDay()] + ' <span style="font-weight:600;color:var(--t3);font-size:12px">' + fmt(dSel) + (aPerDia === hojeKey ? ' · hoje' : '') + ' · sem. ' + fmt(datas[0]) + '–' + fmt(datas[6]) + '</span></div>';
+  var blocos = dados[aPerDia] || [];
+  if (!blocos.length) { el.innerHTML = html + '<div style="font-size:12px;color:var(--t3);padding:10px 0">Sem treino neste dia.</div>'; return; }
+  blocos.forEach(function(b){
+    var isC = b.tipo === 'condicionamento';
+    var titulo = isC ? '🔥 Condicionamento' : ('🏋️ ' + (b.nome ? aEsc(b.nome) : 'Bloco'));
+    var meta = (!isC && b.conjugado) ? 'Conjugado' + (b.series ? (' · ' + aEsc(b.series) + ' séries') : '') : '';
+    var cor = (b.cor && /^#[0-9a-fA-F]{6}$/.test(b.cor)) ? b.cor : '';
+    var corpo = '';
+    if (isC) {
+      if (b.formato) corpo += '<div class="cl-meta"><b>Formato:</b> ' + aEsc(b.formato) + '</div>';
+      if (b.materiais) corpo += '<div class="cl-meta"><b>Materiais:</b> ' + aEsc(b.materiais) + '</div>';
+    }
+    (b.exercicios || []).forEach(function(ex){
+      if (!ex.nome) return;
+      var sr = b.conjugado ? (ex.reps ? (aEsc(ex.reps) + ' reps') : '') : ((ex.series || ex.reps) ? (aEsc(ex.series || '') + (ex.series && ex.reps ? '×' : '') + aEsc(ex.reps || '')) : '');
+      var pl = (ex.url && String(ex.url).indexOf('http') === 0) ? '<button type="button" class="cl-play" data-u="' + aEsc(ex.url) + '" onclick="aColPlay(this)" aria-label="Video">▶</button>' : '';
+      var ch = (b.id || 'b') + '|' + aPerKey(ex.nome), kn = aPerKey(ex.nome);
+      var v = aPerReg[aPerDia + '|' + ch] || { carga: '', obs: '', feito: false };
+      var hs = aPerHist.filter(function(x){ return aPerKey(x.exercicio || '') === kn && x.data < aPerDia && ((x.carga || '').trim() || (x.obs || '').trim()); }).slice(0, 6);
+      corpo += '<div class="pr-ex" data-ch="' + aEsc(ch) + '" data-ex="' + aEsc(ex.nome) + '">' +
+        '<div class="pr-n">' + pl + '<span class="pr-nm">' + aEsc(ex.nome) + '</span>' + (sr ? '<span class="pr-sr">' + sr + '</span>' : '') + '<span class="pr-st"></span></div>' +
+        '<input class="pr-in pr-carga" type="text" inputmode="decimal" placeholder="kg" value="' + aEsc(v.carga) + '" onchange="aPerSalvar(this)">' +
+        '<button type="button" class="pr-obsb' + (v.obs ? ' on' : '') + '" onclick="aPerObsToggle(this)" aria-label="Observação">💬</button>' +
+        '<input class="pr-ck" type="checkbox"' + (v.feito ? ' checked' : '') + ' onchange="aPerSalvar(this)" aria-label="Feito">' +
+        '<input class="pr-in pr-obs" type="text" placeholder="observação" value="' + aEsc(v.obs) + '" style="display:' + (v.obs ? 'block' : 'none') + '" onchange="aPerSalvar(this)">' +
+        (hs.length ? '<div class="pr-last" onclick="aPerHist1(this.parentNode)">Última: ' + aEsc(hs[0].carga || hs[0].obs) + ' · ' + aPerBr(hs[0].data) + ' ▾</div><div class="pr-hint" style="display:none">' + hs.map(function(x){ return aPerBr(x.data) + ' — ' + aEsc(x.carga || '') + (x.obs ? ' · ' + aEsc(x.obs) : ''); }).join('<br>') + '</div>' : '') +
+        '</div>';
+    });
+    if (b.detalhes) corpo += '<div class="cl-det">' + aEsc(b.detalhes) + '</div>';
+    html += '<div class="bloco"' + (cor ? ' style="border-left:4px solid ' + cor + '"' : '') + '><div class="bh" onclick="aColToggle(this)"><div class="dot" style="border-left-color:' + (cor || (isC ? '#D45828' : 'var(--P)')) + '"></div><span class="bt">' + titulo + '</span>' + (meta ? '<span class="bm">' + meta + '</span>' : '') + '<span class="bt-arr">▾</span></div><div class="exl" style="padding:2px 10px 6px' + (cor ? ';background:color-mix(in srgb,' + cor + ' 7%,transparent)' : '') + '">' + corpo + '</div></div>';
+  });
+  el.innerHTML = html + aColLogo();
 }
 let aColetivasCache = null;
 async function aCarregarColetivas(){
