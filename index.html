@@ -896,6 +896,7 @@ body.xo-open #movh-descanso-widget{display:none!important}
       </div>
       <div id="tDashConteudo"></div>
       <div class="xo-next" id="aXoNext"></div>
+      <div class="cam-card" id="tPrimeiroTreino" style="display:none;border-color:var(--P)"></div>
       <div class="cam-card" id="tCaminhoCard" style="display:none" onclick="aVerCaminho()" role="button"></div>
       <div class="dash-actions">
         <button class="vksbtn" id="tBtnProgresso" onclick="aVerProgresso()">📈 Meu progresso</button>
@@ -2044,6 +2045,7 @@ async function aBoot(sessionParam){
 
   aRenderProtocolo(proto);
   try { aCaminhoCarregar(); } catch (e) {}
+  try { aPrimeiroTreino(); } catch (e) {}
 }
 
 function aEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
@@ -2758,7 +2760,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = '4b8d288751c4';
+const A_BUILD = 'b5ff8d220c08';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -3292,6 +3294,9 @@ const FASES_TEMPLATE_PT = {
   base: { label:'Base', emoji:'🔵', rpe:'7–8', rir:'2 (última série 1)', carga:'Progressão dupla', volume:'Alto', descanso:'Compostos 2 min · isoladores 1 min',
     progressao:['Fase única de 8 semanas','Topo da faixa em todas as séries com RIR ≥2 → sobe a menor carga','Revisão a cada 4 semanas pelos registros e dor'],
     humano:['Esforço: termine cada série sentindo que ainda dava para fazer mais 2 repetições (na última série, 1).','Como evoluir: quando fizer o máximo de repetições em todas as séries e ainda sobrar fôlego, suba o menor peso possível.','Descanso: 2 min nos exercícios grandes e 1 min nos menores.'] },
+  consolidacao: { label:'Consolidação', emoji:'🟢', rpe:'7–8', rir:'2', carga:'Manter e afinar', volume:'Alto', descanso:'Compostos 2 min · isoladores 1 min',
+    progressao:['Semanas 9 a 12 do programa','Mantém as cargas da Construção e afina a técnica','Semana 12: testes e reavaliação'],
+    humano:['Objetivo: fixar o que você conquistou e afinar a técnica.','Esforço: mantenha as cargas da Construção e termine sobrando 2 repetições.','Como evoluir: só suba o peso se fizer todas as repetições com boa técnica.','Corrida: se o teste da semana 8 foi bom, entra 1 treino de tiros por semana.','Semana 12: testes e reavaliação para o seu próximo Mapa.'] },
   intensificacao: { label:'Intensificação', emoji:'🔴', rpe:'7–9', rir:'1–3', carga:'~75–90%', volume:'Moderado', descanso:'Maior',
     progressao:['Semana 1: sobe carga','Semana 2: mantém carga + melhora execução','Semana 3: aproxima da falha (RIR 1–2)'],
     humano:['Esforço: mais pesado; termine as séries sentindo que dava para fazer de 1 a 3 repetições a mais.','Como evoluir: na semana 1 suba o peso, na 2 mantenha e capriche na execução, na 3 chegue mais perto do limite.','Descanso: um pouco maior entre as séries.'] },
@@ -3303,6 +3308,9 @@ const FASES_TEMPLATE_PT = {
     humano:['Esforço: leve; termine as séries sobrando bastante, com 4 a 6 repetições a mais.','Como evoluir: semana de recuperação, sem aumentar o peso.','Descanso: livre.'] }
 };
 const FASES_TEMPLATE_EN = {
+  consolidacao: { label:'Consolidation', emoji:'🟢', rpe:'7–8', rir:'2', carga:'Hold and refine', volume:'High', descanso:'Compounds 2 min · isolations 1 min',
+    progressao:['Weeks 9 to 12 of the program','Keeps the Build loads and refines technique','Week 12: tests and reassessment'],
+    humano:['Goal: lock in what you gained and polish your technique.','Effort: keep the Build loads and finish each set with 2 reps left.','How to progress: only add weight if every rep is clean.','Running: if your week 8 test went well, one speed session per week starts.','Week 12: tests and reassessment for your next Map.'] },
   base: { label:'Base', emoji:'🔵', rpe:'7–8', rir:'2 (last set 1)', carga:'Double progression', volume:'High', descanso:'Compounds 2 min · isolations 1 min',
     progressao:['Single 8-week phase','Top of the range on all sets with RIR ≥2 → raise the lightest load','Review every 4 weeks using logs and pain'],
     humano:['Effort: finish each set feeling you could still do 2 more reps (1 on the last set).','How to progress: when you hit the top reps on every set and still have energy left, go up by the smallest weight step.','Rest: 2 min on big lifts and 1 min on smaller ones.'] },
@@ -3513,10 +3521,10 @@ function aCalcularAgendaHoje(proto, semanas, dataAlvoISO){
 // Pace automático: zonas de Daniels (VDOT do teste de 3 km do aluno) quando não há ritmo digitado.
 var CP_ZONAS=['Recuperação','Fácil','Maratona','Limiar','Intervalo','Repetição'];
 var CP_MODELOS={
- continuo:{nome:'Contínuo',zona:1,obs:'rodagem em ritmo de conversa (zona Fácil); cerca de 80% do volume semanal deve ser fácil'},
+ continuo:{nome:'Contínuo',zona:1,obs:'ritmo de conversa (dá para falar frases curtas); cerca de 80% do que você corre na semana deve ser assim'},
  regenerativo:{nome:'Regenerativo',zona:0,obs:'bem leve e sem progressão: serve para recuperar'},
  longao:{nome:'Longão',zona:1,obs:'a sessão mais longa da semana, sempre em ritmo fácil'},
- tempo:{nome:'Tempo run (limiar)',zona:3,obs:'ritmo forte e sustentável (RPE 6-7); só com base aeróbica e sem dor'},
+ tempo:{nome:'Tempo run (limiar)',zona:3,obs:'ritmo forte e firme, dá para falar só poucas palavras; só com base de corrida e sem dor'},
  fartlek:{nome:'Fartlek',zona:3,obs:'alterna trechos fortes por percepção com trotes leves, sem relógio rígido'},
  intervalado:{nome:'Intervalado',zona:4,obs:'tiros com recuperação ativa; aumenta o número de tiros antes de acelerar'},
  caminhada:{nome:'Caminhada-corrida',zona:0,obs:'alterna corrida leve e caminhada; aumenta o tempo correndo aos poucos'}
@@ -3541,8 +3549,9 @@ function cpPlano(b,w,N,zonaSeg){
     o.tiros=Math.max(n0,Math.round(n0*f));o.esf=esf;o.rec=rec;o.tempo=Math.round(10+o.tiros*(esf+rec));
     if(rit)o.dist=cpR2(o.tiros*esf*60/rit);
   }else if(mod==='caminhada'){
-    var c0=esf||1,a0=rec||2,reps=Math.max(1,Math.round((tb||20)/(c0+a0)));
-    o.corre=c0+r.ciclo;o.anda=a0;o.reps=reps;o.tempo=reps*(o.corre+o.anda);
+    var c0=esf||1,a0=rec||2,T=tb||20,cs=c0-1+(w-Math.floor(w/4));cs=Math.max(c0,Math.min(cs,Math.max(c0,T-a0)));
+    var reps=Math.max(1,Math.round(T/(cs+a0)));
+    o.corre=cs;o.anda=a0;o.reps=reps;o.tempo=reps*(o.corre+o.anda);
     if(rit)o.dist=cpR2(reps*o.corre*60/rit);
   }else if(tb){
     o.tempo=(mod==='regenerativo')?Math.round(tb):Math.round(tb*f);
@@ -3561,8 +3570,8 @@ function cpResumo(p){
 }
 function cpObs(p){
   var M=CP_MODELOS[p.modelo];
-  var fase=(p.modelo==='regenerativo')?'sem progressão (recuperação)':(p.assim?'semana de assimilação: mantém o patamar de partida do ciclo, sem aumentar':(p.w>1?'semana de carga: +8% sobre a anterior':'semana de partida'));
-  return fase+'; '+M.obs+'; dor ou RPE 9+: repita a semana anterior';
+  var fase=(p.modelo==='regenerativo')?'sem progressão (recuperação)':(p.assim?'semana de assentar: repete o nível da anterior, sem aumentar':(p.w>1?'semana de aumento: um pouco mais que a anterior':'semana de partida'));
+  return fase+'; '+M.obs+'; se sentir dor ou ficar muito cansado, repita a semana passada';
 }
 function cpSemanaGlobal(inicio,sems){
   var N=0,i;for(i=0;i<(sems||[]).length;i++)N+=parseInt(sems[i].duracaoSemanas,10)||4;if(!N)N=1;
@@ -3715,8 +3724,9 @@ function aFaseDetId(ctxPrefix){ return 'fasedet-' + ctxPrefix; }
 // Ao clicar, alterna a exibição do card de detalhe (aMontarCardFase) correspondente.
 function aMontarBadgeFase(semana, ctxPrefix){
   const FT = aFasesTemplate();
-  if (!semana.fase || !FT[semana.fase]) return '';
-  const ft = FT[semana.fase];
+  const _fk = (semana.nome === 'Consolidação' && FT.consolidacao) ? 'consolidacao' : semana.fase;
+  if (!semana.fase || !FT[_fk]) return '';
+  const ft = FT[_fk];
   const detId = aFaseDetId(ctxPrefix);
   return '<button type="button" class="fase-badge" data-tgt="' + detId + '" onclick="aToggleFaseDetalhe(this)">' + ft.emoji + ' ' + aEsc(ft.label) + ' <span class="fase-badge-arrow">▾</span></button>';
 }
@@ -3732,8 +3742,9 @@ function aToggleFaseDetalhe(btn){
 
 function aMontarCardFase(semana, semanaDentroFase, ctxPrefix){
   const FT = aFasesTemplate();
-  if (!semana.fase || !FT[semana.fase]) return '';
-  const ft = FT[semana.fase];
+  const _fk = (semana.nome === 'Consolidação' && FT.consolidacao) ? 'consolidacao' : semana.fase;
+  if (!semana.fase || !FT[_fk]) return '';
+  const ft = FT[_fk];
   const detId = aFaseDetId(ctxPrefix);
   const helpId = 'th-' + detId;
   if (ft.humano) {
@@ -3868,7 +3879,31 @@ function aCaminhoSemana(m){
 }
 function aCaminhoFase(m, sem){
   const t = m.semanas || 12;
-  return sem <= Math.round(t / 3) ? 'Começo' : (sem <= Math.round(t * 2 / 3) ? 'Meio' : 'Fim');
+  return sem <= Math.round(t / 3) ? 'Base' : (sem <= Math.round(t * 2 / 3) ? 'Construção' : 'Consolidação');
+}
+// Treinos por semana do protocolo (dias da semana 1) e treinos já feitos desde o início do Mapa.
+let aCaminhoFeitos = null;
+function aCaminhoDiasSem(){
+  try { const sm = aProtocolo && aProtocolo.conteudo && aProtocolo.conteudo.semanas; const d = sm && sm[0] && sm[0].dias; return d && d.length ? d.length : 0; } catch (e) { return 0; }
+}
+function aCaminhoTreinoTxt(m){
+  const ds = aCaminhoDiasSem(), tot = m.semanas || 12;
+  if (!ds || aCaminhoFeitos == null) return '';
+  return 'Treino ' + Math.min(aCaminhoFeitos + 1, ds * tot) + ' de ' + (ds * tot);
+}
+// Treino de chegada: só para quem ainda não registrou nenhuma sessão. Semana 1 = acerto de carga.
+async function aPrimeiroTreino(){
+  const el = document.getElementById('tPrimeiroTreino'); if (!el) return;
+  el.style.display = 'none';
+  if (window._movhPreview || !aAlunoRow || !aAlunoRow.id) return;
+  try {
+    const q = await aClient.from('rpe_sessoes').select('id').eq('aluno_id', aAlunoRow.id).limit(1);
+    if (q.error || (q.data && q.data.length)) return;
+  } catch (e) { return; }
+  el.innerHTML = '<div class="cam-top"><b>👋 Seu primeiro treino</b></div>' +
+    '<div class="cam-prox" style="font-size:12.5px;line-height:1.5;color:var(--tx)">Hoje o objetivo é achar a sua carga, não cansar: pare cada série sobrando 3 ou 4 repetições.</div>' +
+    '<div class="cam-prox">A semana 1 é de acerto: você repete este treino e a carga sobe a partir da semana 2. Anotar a carga faz parte do treino.</div>';
+  el.style.display = 'block';
 }
 async function aCaminhoCarregar(){
   aCaminhoMapa = null; aCaminhoRow = null;
@@ -3884,6 +3919,11 @@ async function aCaminhoCarregar(){
     if (!row) return;
     aCaminhoRow = row; aCaminhoMapa = row.mapa;
   } catch (e) { return; }
+  aCaminhoFeitos = null;
+  try {
+    const q = await aClient.from('rpe_sessoes').select('criado_em').eq('aluno_id', aAlunoRow.id).gte('criado_em', (aCaminhoMapa.inicio || '2000-01-01') + 'T00:00:00');
+    if (!q.error) aCaminhoFeitos = new Set((q.data || []).map(function(x){ return String(x.criado_em).slice(0,10); })).size;
+  } catch (e) {}
   aCaminhoRenderCard();
 }
 function aCaminhoRenderCard(){
@@ -3892,8 +3932,10 @@ function aCaminhoRenderCard(){
   const sem = aCaminhoSemana(m), tot = m.semanas || 12;
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   const prox = (m.marcos || []).slice().sort(function(a,b){ return a.sem - b.sem; }).find(function(x){ const d = aCaminhoDiaMarco(m, x.sem); return d && d >= hoje; });
-  card.innerHTML = '<div class="cam-top"><b>🧭 Seu caminho</b><span>Semana ' + sem + ' de ' + tot + ' ›</span></div>' +
+  const trn = aCaminhoTreinoTxt(m);
+  card.innerHTML = '<div class="cam-top"><b>🧭 Seu caminho</b><span>' + aCaminhoFase(m, sem) + ' · Semana ' + sem + ' de ' + tot + ' ›</span></div>' +
     '<div class="cam-bar"><i style="width:' + Math.round(sem / tot * 100) + '%"></i></div>' +
+    (trn ? '<div class="cam-prox">' + trn + '</div>' : '') +
     (prox ? '<div class="cam-prox">Próximo: ' + aEsc(prox.titulo) + ' · ' + aCaminhoFmt(aCaminhoDiaMarco(m, prox.sem)) + '</div>' : '');
   card.style.display = 'block';
 }
@@ -3933,7 +3975,8 @@ async function aVerCaminho(){
   const med = [row.peso ? ['Peso', row.peso + ' kg'] : null, row.cintura ? ['Cintura', row.cintura + ' cm'] : null, (row.cintura && row.quadril) ? ['RCQ', (row.cintura / row.quadril).toFixed(2)] : null].filter(Boolean)
     .map(function(x){ return '<div class="cam-med"><small>' + x[0] + '</small><b>' + x[1] + '</b></div>'; }).join('');
   document.getElementById('tCaminhoConteudo').innerHTML =
-    '<div class="cam-hd"><b>🧭 Seu caminho</b><span class="cam-chip">Semana ' + sem + ' de ' + tot + ' · ' + fase + '</span></div>' +
+    '<div class="cam-hd"><b>🧭 Seu caminho</b><span class="cam-chip">' + fase + ' · Semana ' + sem + ' de ' + tot + '</span></div>' +
+    (aCaminhoTreinoTxt(m) ? '<div class="cam-sub" style="margin:-4px 2px 8px">' + aCaminhoTreinoTxt(m) + '</div>' : '') +
     aCaminhoBox('Sua meta', '<div class="cam-big">' + aEsc(m.objetivo || 'Seu objetivo') + '</div><div class="cam-sub">' + tot + ' semanas · reavaliação na semana ' + tot + '</div><div class="cam-bar"><i style="width:' + Math.round(sem / tot * 100) + '%"></i></div>') +
     aCaminhoBox('Marcos', '<div class="cam-tl">' + tl + '</div>') +
     '<button class="vksbtn cam-link" onclick="aVerProgresso()">📈 Cargas e histórico ›</button>' +
