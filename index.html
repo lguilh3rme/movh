@@ -269,7 +269,7 @@ body #treinoScreen #tLinhaAlertas{position:sticky;top:0;z-index:30;display:flex;
 .cam-st b{font-size:13.5px}.cam-d{font-size:11px;color:var(--t3);margin-top:1px}.cam-st p{font-size:12px;color:var(--t2);margin:3px 0 0;line-height:1.4}
 .cam-link{width:100%;margin:0 0 10px;text-align:left}
 .cam-meds{display:flex;gap:8px;margin-bottom:10px}.cam-med{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px}.cam-med small{display:block;font-size:10px;color:var(--t3)}.cam-med b{font-size:15px}
-.cam-fts{display:flex;gap:6px}.cam-ft{flex:1;text-align:center;font-size:9.5px;color:var(--t3)}.cam-ft img{width:100%;border-radius:7px;border:1px solid var(--bd);display:block;margin-bottom:3px}
+.cam-cmp-t{font-size:11px;font-weight:700;color:var(--t3);margin:8px 0 4px}.cam-fts{display:flex;gap:6px}.cam-ft{flex:1;text-align:center;font-size:9.5px;color:var(--t3)}.cam-ft img{width:100%;border-radius:7px;border:1px solid var(--bd);display:block;margin-bottom:3px}
 .cam-li{font-size:12.5px;color:var(--t2);padding:4px 0 4px 14px;position:relative;line-height:1.4}.cam-li:before{content:"";position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--P)}
 .pr-top{display:flex;gap:6px;align-items:center;margin-bottom:8px}
 .pr-top .pr-sel,.pr-top .pr-nome{flex:1;min-width:0;margin:0}
@@ -2760,7 +2760,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = 'b5ff8d220c08';
+const A_BUILD = 'c5f9a63701fc';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -3870,6 +3870,11 @@ function aCaminhoDiaMarco(m, sem){
   const d = new Date((m.inicio || '') + 'T12:00:00'); if (isNaN(d)) return null;
   d.setDate(d.getDate() + (Number(sem) || 0) * 7); return d;
 }
+function aCaminhoDataMarco(m, x){
+  if (x && x.data) { const d = new Date(x.data + 'T12:00:00'); if (!isNaN(d)) return d; }
+  return aCaminhoDiaMarco(m, x && x.sem);
+}
+function aCaminhoFmtIso(t){ t = String(t || ''); return t.length >= 10 ? t.slice(8,10) + '/' + t.slice(5,7) : ''; }
 function aCaminhoFmt(d){ return d ? String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') : ''; }
 function aCaminhoSemana(m){
   const d0 = new Date((m.inicio || '') + 'T12:00:00'); const tot = m.semanas || 12;
@@ -3931,19 +3936,25 @@ function aCaminhoRenderCard(){
   if (!card || !m) return;
   const sem = aCaminhoSemana(m), tot = m.semanas || 12;
   const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const prox = (m.marcos || []).slice().sort(function(a,b){ return a.sem - b.sem; }).find(function(x){ const d = aCaminhoDiaMarco(m, x.sem); return d && d >= hoje; });
+  const prox = (m.marcos || []).slice().sort(function(a,b){ return a.sem - b.sem; }).find(function(x){ const d = aCaminhoDataMarco(m, x); return d && d >= hoje; });
   const trn = aCaminhoTreinoTxt(m);
   card.innerHTML = '<div class="cam-top"><b>🧭 Seu caminho</b><span>' + aCaminhoFase(m, sem) + ' · Semana ' + sem + ' de ' + tot + ' ›</span></div>' +
     '<div class="cam-bar"><i style="width:' + Math.round(sem / tot * 100) + '%"></i></div>' +
     (trn ? '<div class="cam-prox">' + trn + '</div>' : '') +
-    (prox ? '<div class="cam-prox">Próximo: ' + aEsc(prox.titulo) + ' · ' + aCaminhoFmt(aCaminhoDiaMarco(m, prox.sem)) + '</div>' : '');
+    (prox ? '<div class="cam-prox">Próximo: ' + aEsc(prox.titulo) + ' · ' + aCaminhoFmt(aCaminhoDataMarco(m, prox)) + '</div>' : '');
   card.style.display = 'block';
 }
-async function aCaminhoFotoUrl(k){
+function aCaminhoPixelar(x, W, H, r){
+  const px = Math.round(r.x * W), py = Math.round(r.y * H), pw = Math.max(1, Math.round(r.w * W)), ph = Math.max(1, Math.round(r.h * H)), bs = 18;
+  const t = document.createElement('canvas'); t.width = Math.max(1, Math.ceil(pw / bs)); t.height = Math.max(1, Math.ceil(ph / bs));
+  t.getContext('2d').drawImage(x.canvas, px, py, pw, ph, 0, 0, t.width, t.height);
+  x.imageSmoothingEnabled = false; x.drawImage(t, 0, 0, t.width, t.height, px, py, pw, ph);
+}
+async function aCaminhoFotoUrl(k, antes){
   const m = aCaminhoMapa, row = aCaminhoRow; const f = (m.fotos && m.fotos[k]) || {};
   if (f.show === false) return null;
-  const src = f.src || row['foto_' + k + '_path']; const url = src && aCaminhoUrls[src]; if (!url) return null;
-  const ck = [src, f.rot, f.zoom].join('|'); if (aCaminhoImgs[ck]) return aCaminhoImgs[ck];
+  const src = antes ? f.antes : (f.src || row['foto_' + k + '_path']); const url = src && aCaminhoUrls[src]; if (!url) return null;
+  const ck = [src, f.rot, f.zoom, JSON.stringify(f.blur || [])].join('|'); if (aCaminhoImgs[ck]) return aCaminhoImgs[ck];
   try {
     const img = await new Promise(function(ok, er){ const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = function(){ ok(i); }; i.onerror = er; i.src = url; });
     const W = 300, H = 400, c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -3951,6 +3962,7 @@ async function aCaminhoFotoUrl(k){
     x.translate(W / 2, H / 2); x.rotate((f.rot || 0) * Math.PI / 180);
     const giro = (f.rot || 0) % 180 !== 0, iw = giro ? img.height : img.width, ih = giro ? img.width : img.height;
     const s = Math.max(W / iw, H / ih) * (f.zoom || 1); x.scale(s, s); x.drawImage(img, -img.width / 2, -img.height / 2);
+    x.setTransform(1, 0, 0, 1, 0, 0); (f.blur || []).forEach(function(r){ aCaminhoPixelar(x, W, H, r); });
     return (aCaminhoImgs[ck] = c.toDataURL('image/jpeg', 0.82));
   } catch (e) { return null; }
 }
@@ -3968,7 +3980,7 @@ async function aVerCaminho(){
   const marcos = (m.marcos || []).slice().sort(function(a,b){ return a.sem - b.sem; });
   let achouAtual = false;
   const tl = marcos.map(function(x){
-    const d = aCaminhoDiaMarco(m, x.sem); const feito = d && d < hoje;
+    const d = aCaminhoDataMarco(m, x); const feito = d && d < hoje;
     let cls = feito ? 'ok' : ''; if (!feito && !achouAtual) { cls = 'now'; achouAtual = true; }
     return '<div class="cam-st ' + cls + '"><span class="cam-dot"></span><b>' + aEsc(x.titulo) + '</b><div class="cam-d">Semana ' + x.sem + ' · ' + aCaminhoFmt(d) + (feito ? ' · feito' : '') + '</div>' + (x.texto ? '<p>' + aEsc(x.texto) + '</p>' : '') + '</div>';
   }).join('');
@@ -3987,12 +3999,18 @@ async function aVerCaminho(){
     ((m.depende || []).length ? aCaminhoBox('O que depende de você', aCaminhoLista(m.depende)) : '');
   window.scrollTo(0, 0);
   try {
-    const paths = []; A_CAM_VISTAS.forEach(function(v){ const f = (m.fotos && m.fotos[v[0]]) || {}; const p = f.src || row['foto_' + v[0] + '_path']; if (p && paths.indexOf(p) < 0) paths.push(p); });
+    const paths = []; A_CAM_VISTAS.forEach(function(v){ const f = (m.fotos && m.fotos[v[0]]) || {}; [f.src || row['foto_' + v[0] + '_path'], f.antes].forEach(function(p){ if (p && paths.indexOf(p) < 0) paths.push(p); }); });
     if (paths.length) { const r = await aClient.storage.from('avaliacoes').createSignedUrls(paths, 3600); (r.data || []).forEach(function(s){ if (s && s.path && s.signedUrl) aCaminhoUrls[s.path] = s.signedUrl; }); }
-    const fts = [];
-    for (const v of A_CAM_VISTAS) { const u = await aCaminhoFotoUrl(v[0]); if (u) fts.push('<div class="cam-ft"><img src="' + u + '" alt="">' + v[1] + '</div>'); }
+    const fts = [], cmp = [];
+    for (const v of A_CAM_VISTAS) {
+      const f = (m.fotos && m.fotos[v[0]]) || {}; const u = await aCaminhoFotoUrl(v[0]); if (!u) continue;
+      const ua = f.antes ? await aCaminhoFotoUrl(v[0], true) : null;
+      const dAgora = f.src_data || row.data_avaliacao;
+      if (ua) cmp.push('<div class="cam-cmp-t">' + v[1] + '</div><div class="cam-fts"><div class="cam-ft"><img src="' + ua + '" alt="">Antes' + (f.antes_data ? ' · ' + aCaminhoFmtIso(f.antes_data) : '') + '</div><div class="cam-ft"><img src="' + u + '" alt="">Agora' + (dAgora ? ' · ' + aCaminhoFmtIso(dAgora) : '') + '</div></div>');
+      else fts.push('<div class="cam-ft"><img src="' + u + '" alt="">' + v[1] + '</div>');
+    }
     const box = document.getElementById('tCamFotos');
-    if (box && fts.length) box.innerHTML = aCaminhoBox('Postura', '<div class="cam-fts">' + fts.join('') + '</div>');
+    if (box && (fts.length || cmp.length)) box.innerHTML = (fts.length ? aCaminhoBox('Postura', '<div class="cam-fts">' + fts.join('') + '</div>') : '') + (cmp.length ? aCaminhoBox('Antes e depois', cmp.join('')) : '');
   } catch (e) {}
 }
 function aVoltarHoje(){
