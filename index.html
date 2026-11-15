@@ -2760,7 +2760,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = 'c5f9a63701fc';
+const A_BUILD = '5aba85780064';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -3938,6 +3938,14 @@ function aCaminhoRenderCard(){
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   const prox = (m.marcos || []).slice().sort(function(a,b){ return a.sem - b.sem; }).find(function(x){ const d = aCaminhoDataMarco(m, x); return d && d >= hoje; });
   const trn = aCaminhoTreinoTxt(m);
+  const d0 = new Date((m.inicio || '') + 'T12:00:00');
+  if (!isNaN(d0) && Date.now() - d0.getTime() >= tot * 7 * 86400000) {
+    card.innerHTML = '<div class="cam-top"><b>🧭 Seu caminho</b><span>✅ Ciclo concluído ›</span></div>' +
+      '<div class="cam-bar"><i style="width:100%"></i></div>' +
+      '<div class="cam-prox">Você completou as ' + tot + ' semanas. Toque para rever o caminho; o próximo Mapa vem na sua reavaliação.</div>';
+    card.style.display = 'block';
+    return;
+  }
   card.innerHTML = '<div class="cam-top"><b>🧭 Seu caminho</b><span>' + aCaminhoFase(m, sem) + ' · Semana ' + sem + ' de ' + tot + ' ›</span></div>' +
     '<div class="cam-bar"><i style="width:' + Math.round(sem / tot * 100) + '%"></i></div>' +
     (trn ? '<div class="cam-prox">' + trn + '</div>' : '') +
