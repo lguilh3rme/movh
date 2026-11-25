@@ -227,6 +227,22 @@ body.preview-mode #tSairBtn,body.preview-mode #tBtnProgresso,body.preview-mode #
 .ec-done-wrap{position:relative;display:inline-flex;flex-shrink:0}
 .ec-done-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;opacity:.3;pointer-events:none;transition:opacity .15s}
 .ec-done-cb:checked ~ .ec-done-hint{opacity:0}
+.ec-done-wrap{display:none!important}
+.ec-ring{display:none!important}
+.bn{width:22px;height:22px;border-radius:50%;background:var(--bd);color:var(--tx);font:800 12px/22px var(--font-b,sans-serif);text-align:center;flex:none;margin-right:8px}
+.bq{font-size:11px;font-weight:600;color:var(--t2);margin-left:auto;margin-right:6px;white-space:nowrap}
+.bloco.agora{border:2px solid var(--G)!important;box-shadow:0 0 0 4px color-mix(in srgb,var(--G) 16%,transparent)!important}
+.bloco.agora .bn{background:var(--G);color:#06210f}
+.bag{font:800 9.5px/1 var(--font-b,sans-serif);letter-spacing:.08em;background:var(--G);color:#06210f;border-radius:99px;padding:4px 8px;margin-left:8px;white-space:nowrap}
+#tDashConteudo:has(.bloco.agora) .bloco:not(.agora){opacity:.82}
+.bloco .bh .dot,.bloco .bh .bp,.bloco .bh .bm{display:none!important}
+.bq{display:none}
+.bloco:not(.agora) .bh{padding:6px 12px!important}
+.bloco.bloco-ativ .exl{gap:4px!important;padding:2px 8px 8px!important}
+.bloco.bloco-ativ .exl .ec{padding:3px 8px!important;border-radius:8px!important}
+.bloco.bloco-ativ .exl .ec .ec-n{font-size:11.5px!important;font-weight:600!important}
+.bloco.bloco-ativ .exl .ec .ec-n::before{font-size:9.5px!important;min-width:9px!important}
+.bloco.bloco-ativ .exl .ec .ec-name-row .vbtn{height:17px!important;padding:0 5px!important}
 .bloco-done-btn{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--bd);background:transparent;cursor:pointer;color:var(--t3);font-size:11px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;margin-left:auto}
 .bloco-done-btn:hover{border-color:var(--G);color:var(--G)}
 .bloco.bloco-concluido .bloco-done-btn{background:var(--G);color:#fff;border-color:var(--G)}
@@ -2615,15 +2631,16 @@ function aXoBarraProximo(){
   todos.forEach(function(c){ c.classList.toggle('ec-prox', c === prox); });
   const cont = document.getElementById('tDashConteudo');
   const bAtual = prox.closest ? prox.closest('.bloco') : null;
-  if (cont && bAtual && !cont.querySelector('.bloco[data-foco]')) {
+  if (cont && bAtual) {
     cont.querySelectorAll('.bloco').forEach(function(b){
-      b.setAttribute('data-foco', '1');
-      if (b === bAtual) return;
-      const corpo = b.querySelector('.exl'), seta = b.querySelector('.bt-arr');
-      if (corpo) corpo.style.display = 'none';
-      if (seta) seta.style.transform = 'rotate(-90deg)';
+      const eh = b === bAtual; b.classList.toggle('agora', eh);
+      const tg = b.querySelector('.bag');
+      if (eh && !tg) { const t = b.querySelector('.bh .bt'); if (t) { const s = document.createElement('span'); s.className = 'bag'; s.textContent = aLang==='en' ? 'RECOMMENDED' : 'RECOMENDADO'; t.insertAdjacentElement('afterend', s); } }
+      else if (!eh && tg) tg.remove();
     });
-  } else if (window._aXoUlt && window._aXoUlt !== prox.id) {
+  }
+  // blocos ficam ABERTOS desde o início (só recolhem ao concluir)
+  if (window._aXoUlt && window._aXoUlt !== prox.id) {
     try { prox.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e) {}
   }
   window._aXoUlt = prox.id;
@@ -2907,7 +2924,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
     const repsM = serieCurtoM[2].trim().match(/^([\d\-–\/]+)\s*(.*)$/);
     const lblS = aLang==='en' ? 'sets' : 'séries';
     seriesBadgeHTML = '<span class="sx-c"><i>' + lblS + '</i><b>' + (seriesTotal ? '<span class="sx-cnt" id="'+eid+'-series-count">' + (Math.min(aSeriesFeitas[eid]||0,seriesTotal)>=seriesTotal?'✓ ':'') + Math.min(aSeriesFeitas[eid]||0,seriesTotal) + '/</span>' : '') + aEsc(serieCurtoM[1]) + '</b></span><span class="sx-x">×</span>' +
-      (repsM ? (function(){ const sfx = repsM[2].trim(); const tk = sfx.split(' ')[0].toLowerCase(); const ehT = ['s','seg','min','m',"'",'"'].indexOf(tk) >= 0; const resto = ehT ? sfx.slice(tk.length).trim() : sfx; return '<span class="sx-c"><i>' + (ehT ? (aLang==='en'?'time':'tempo') : 'reps') + '</i><b>' + aEsc(repsM[1].replace(/\s*[-–]\s*/g, ' ' + aT('ate') + ' ')) + (ehT ? aEsc(tk) : '') + '</b></span>' + (resto ? '<span class="sx-ex">' + aEsc(resto) + '</span>' : ''); })() : '<span class="sx-c"><i>reps</i><b>' + aEsc(serieCurtoM[2].trim()) + '</b></span>');
+      (repsM ? (function(){ const sfx = repsM[2].trim(); const tk = sfx.split(' ')[0].toLowerCase(); const ehT = ['s','seg','min','m',"'",'"'].indexOf(tk) >= 0; const resto = ehT ? sfx.slice(tk.length).trim() : sfx; return '<span class="sx-c"><i>' + (ehT ? (aLang==='en'?'time':'tempo') : (aLang==='en'?'reps':'repetições')) + '</i><b>' + aEsc(repsM[1].replace(/\s*[-–]\s*/g, ' ' + aT('ate') + ' ')) + (ehT ? aEsc(tk) : '') + '</b></span>' + (resto ? '<span class="sx-ex">' + aEsc(resto) + '</span>' : ''); })() : '<span class="sx-c"><i>'+(aLang==='en'?'reps':'repetições')+'</i><b>' + aEsc(serieCurtoM[2].trim()) + '</b></span>');
   }
   const seriesFeitasHoje = Math.min(aSeriesFeitas[eid] || 0, seriesTotal || 0);
   const seriesFillPct = seriesTotal ? Math.min(100, (seriesFeitasHoje/seriesTotal)*100) : 0;
@@ -2960,7 +2977,7 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = '433441d178c1';
+const A_BUILD = '148d5d048902';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
@@ -3846,7 +3863,7 @@ function aBlocoOut(b, faseAtual, ctxPrefix, bIdx, semanaDentroFase, duracaoSeman
   const exs = aRenderExercicios(b, faseAtual, bid, semanaDentroFase, duracaoSemanas);
   const obsBloco = b.obs ? '<div class="b-obs" id="bobs-'+bid+'">'+aEsc(b.obs)+'</div>' : '';
   const dicaBtn = b.obs ? '<button type="button" class="b-tip" data-bid="'+bid+'" onclick="event.stopPropagation();aBlocoDica(this.dataset.bid)" aria-label="Dica">💡</button>' : '';
-  return '<div class="bloco'+(aEhAtiv(b)?' bloco-ativ':'')+'" id="bloco-'+bid+'"><div class="bh" data-bid="'+bid+'" onclick="aToggleBloco(this.dataset.bid,this)"><div class="dot" style="border-left-color:'+(b.cor||'#999')+'"></div><span class="bt">'+aEsc(b.nome)+'</span>'+dicaBtn+(b.meta?'<span class="bm">'+aEsc(b.meta)+'</span>':'')+'<span class="bp" id="bp-'+bid+'"></span><span class="bt-arr">▾</span><button class="bloco-done-btn" id="bdone-'+bid+'" data-bid="'+bid+'" onclick="event.stopPropagation();aBlocoToggleDone(this.dataset.bid)" title="Concluir bloco">✓</button></div>'+obsBloco+'<div class="exl" id="'+bid+'">'+exs+'</div></div>';
+  return '<div class="bloco'+(aEhAtiv(b)?' bloco-ativ':'')+'" id="bloco-'+bid+'"><div class="bh" data-bid="'+bid+'" onclick="aToggleBloco(this.dataset.bid,this)"><span class="bn">'+((bIdx!=null?bIdx:0)+1)+'</span><div class="dot" style="border-left-color:'+(b.cor||'#999')+'"></div><span class="bt">'+aEsc(b.nome)+'</span>'+dicaBtn+(b.meta?'<span class="bm">'+aEsc(b.meta)+'</span>':'')+'<span class="bq">'+((b.exercicios||[]).length)+' '+(aLang==='en'?'exercises':'exercícios')+'</span><span class="bp" id="bp-'+bid+'"></span><span class="bt-arr">▾</span><button class="bloco-done-btn" id="bdone-'+bid+'" data-bid="'+bid+'" onclick="event.stopPropagation();aBlocoToggleDone(this.dataset.bid)" title="Concluir bloco">✓</button></div>'+obsBloco+'<div class="exl" id="'+bid+'">'+exs+'</div></div>';
 }
 
 // Monta a lista de exercícios de um bloco, agrupando os que estão marcados
