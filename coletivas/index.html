@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://www.youtube-nocookie.com"><link rel="preconnect" href="https://www.youtube.com"><link rel="preconnect" href="https://i.ytimg.com"><link rel="dns-prefetch" href="https://www.google.com">
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>MOVH Coletivas</title>
-<link rel="manifest" href="/manifest-coletivas.webmanifest"><link rel="apple-touch-icon" href="/icons/coletivas-apple-touch.png"><link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="../icons/coletivas-apple-touch.png"><link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
 <meta name="theme-color" content="#111110"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Coletivas"><meta name="apple-mobile-web-app-status-bar-style" content="black">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -769,7 +769,9 @@ body{font-family:var(--font-b)}
 .xo-next .xo-btn{animation:xoPulse 1.1s ease-in-out 3;box-shadow:0 0 0 3px var(--Pl)}
 @keyframes xoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
 @media (prefers-reduced-motion:reduce){.xo-next .xo-btn{animation:none}}
-.ec.ec-prox{box-shadow:0 0 0 2px var(--P)!important}
+.ec.ec-prox{animation:ecProx 1.1s ease-in-out 3}
+@keyframes ecProx{0%,100%{box-shadow:0 0 0 0 transparent}45%{box-shadow:0 0 0 3px var(--P)}}
+@media (prefers-reduced-motion:reduce){.ec.ec-prox{animation:none}}
 .ec{scroll-margin-bottom:96px}
 .exl{counter-reset:exn}
 .ec .ec-n::before{counter-increment:exn;content:counter(exn);display:inline-block;min-width:12px;margin-right:5px;font-size:11px;font-weight:700;color:var(--t3);text-align:center}
@@ -1305,7 +1307,7 @@ function aInstKey(n){ return n + (A_MODO ? '-' + A_MODO : ''); }
 var aInstEvt = null, aInstArmado = false;
 window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); aInstEvt = e; try { aInstallInit(); } catch(x) {} });
 window.addEventListener('appinstalled', function(){ try { localStorage.setItem(aInstKey('movh-install'), 'done'); } catch(x) {} aInstFechar(); });
-if ('serviceWorker' in navigator) window.addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); });
+if ('serviceWorker' in navigator) window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
 function aInstStandalone(){
   try { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; } catch(x) { return false; }
 }
@@ -1620,7 +1622,7 @@ function aPreviewSafetyNet(){
 const A_APP_URL = 'https://movh.netlify.app/';
 function aIrParaRegistro(){
   try { sessionStorage.setItem('movh-via-treino', '1'); } catch(e){}
-  window.location.href = aBaseApp() + '?bemvindo=1';
+  window.location.href = (A_MODO ? A_APP_URL : aBaseApp()) + '?bemvindo=1';
 }
 function aPreviewErroTela(err){
   const en = (navigator.language || '').toLowerCase().indexOf('en') === 0;
@@ -2807,7 +2809,7 @@ function aDescansoFinalizar(){
   if (!aDescansoTimer) return;
   if ('Notification' in window && Notification.permission === 'granted' && document.visibilityState !== 'visible') {
     const tit = aLang==='en' ? 'Rest done! 💪' : 'Descanso acabou! 💪';
-    const opt = { body: aDescansoTimer.nome ? ((aLang==='en'?'Back to: ':'Hora de voltar pro: ') + aDescansoTimer.nome) : '', tag: 'movh-descanso', renotify: true, vibrate: [250,120,250,120,400], icon: '/icons/coletivas-192.png', badge: '/icons/coletivas-192.png' };
+    const opt = { body: aDescansoTimer.nome ? ((aLang==='en'?'Back to: ':'Hora de voltar pro: ') + aDescansoTimer.nome) : '', tag: 'movh-descanso', renotify: true, vibrate: [250,120,250,120,400], icon: '../icons/coletivas-192.png', badge: '../icons/coletivas-192.png' };
     let feito = false;
     try {
       if (navigator.serviceWorker && navigator.serviceWorker.ready) {
@@ -2958,11 +2960,11 @@ function aExCard(ex, faseAtual, eid, progressaoAuto, semanaDentroFase, duracaoSe
 const A_WHATSAPP_NUM = '5527988225340';
 // Atualização automática: o export grava o carimbo da versão em A_BUILD e em version.json.
 // Se o app ficou aberto/restaurado de uma versão antiga, recarrega sozinho (1x por versão).
-const A_BUILD = 'dbcda6dff6db';
+const A_BUILD = '433441d178c1';
 async function aChecarVersao(){
   try {
     if (A_BUILD.indexOf('__') === 0) return;
-    const r = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
+    const r = await fetch('../version.json?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) return;
     const j = await r.json();
     if (!j || !j.build || j.build === A_BUILD) return;
